@@ -1,5 +1,6 @@
 import logging
 import sys
+from pprint import PrettyPrinter
 
 APP_LOGGER_NAME = 'cf_topic_modeling'
 
@@ -27,3 +28,6 @@ def setup_applevel_logger(logger_name = APP_LOGGER_NAME,
 
 def get_logger(module_name):
     return logging.getLogger(APP_LOGGER_NAME).getChild(module_name)
+
+def get_prettyprinter():
+    return PrettyPrinter(indent=4)
