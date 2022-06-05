@@ -6,12 +6,16 @@ APP_LOGGER_NAME = 'cf_topic_modeling'
 
 def setup_applevel_logger(logger_name = APP_LOGGER_NAME,
                         is_debug=True,
-                        file_name=None):
+                        file_name=None,
+                        simple_logs=True):
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG if is_debug else logging.INFO)
 
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    if simple_logs:
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    else:
+        formatter = logging.Formatter('[%(levelname)s] %(message)s')
 
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)

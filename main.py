@@ -1,6 +1,8 @@
 import csv
+
 import logger
-logger.setup_applevel_logger(is_debug=True, file_name='app.logs')
+
+logger.setup_applevel_logger(is_debug=False, file_name='app.logs', simple_logs=False)
 
 from pprint import PrettyPrinter
 
@@ -14,5 +16,7 @@ log = logger.get_logger(__name__)
 with open('./dataset/cf_problems.csv', 'r') as f:
     reader = csv.DictReader(f)
     for row in reader:
-        pprint(row['statement'])
-        pprint(utils.preprocess_cf_statement(row['statement']))
+        # pprint(row['statement'])
+        res = utils.preprocess_cf_statement(row['statement'])
+        # pprint(res)
+        log.info('%s %s', row['url'],  res)
