@@ -161,3 +161,4 @@ cython_debug/
 
 #### Project custom #####
 dataset/cf_problems.csv
+app.logs
