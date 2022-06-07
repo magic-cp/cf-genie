@@ -161,4 +161,6 @@ cython_debug/
 
 #### Project custom #####
 dataset/raw_cf_problems.csv
+plots/
 app.logs
+.DS_Store
