@@ -128,3 +128,8 @@ def preprocess_cf_statement(text: str) -> List[str]:
     log.debug('Tokens after stemming: %s', words)
 
     return words
+
+
+def preprocess_and_store(dataset: List[str]):
+    for i in range(0, len(dataset)):
+        dataset[i] = preprocess_cf_statement(dataset[i])

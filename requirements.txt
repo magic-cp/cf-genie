@@ -5,3 +5,4 @@ nltk==3.7
 regex==2022.4.24
 tqdm==4.64.0
 wordcloud==1.8.1
+pandas==1.4.2
