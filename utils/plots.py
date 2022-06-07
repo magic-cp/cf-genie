@@ -1,8 +1,12 @@
+from typing import Optional
+
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
+from .read_write_files import write_plot
 
-def plot_wordcloud(text: str) -> None:
+
+def plot_wordcloud(text: str, file_name: Optional[str] = None, plot_title: Optional[str] = None):
     wordcloud = WordCloud(
         background_color='black',
         width=1000,
@@ -13,6 +17,12 @@ def plot_wordcloud(text: str) -> None:
     ).generate(text)
 
     plt.figure()
+    if plot_title:
+        plt.title(plot_title)
     plt.axis('off')
     plt.imshow(wordcloud, interpolation='bilinear')
-    plt.show()
+
+    if file_name:
+        write_plot(file_name, plt)
+    else:
+        plt.show()

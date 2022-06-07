@@ -1,4 +1,5 @@
 import csv
+from itertools import groupby
 
 import logger
 
@@ -71,6 +72,7 @@ def main():
     df.drop(columns=['is_interactive', 'input_spec', 'output_spec', 'url'], axis=1, inplace=True)
 
     # Let's take a look at the first few rows
+    print('Sneak peek of the raw dataset:')
     print(df.head())
 
     # few problems don't have any tag neither statement, we remove them
@@ -82,23 +84,37 @@ def main():
 
     # Some tags are not really tags, e.g. *<number>. Those tags are not on our mapper, hence we can remove them using it.
     remove_invalid_tag = lambda tags: [tag for tag in tags if tag in TAG_GROUP_MAPPER]
-    map_tags = lambda tags: sorted([TAG_GROUP_MAPPER[tag] for tag in tags])
-    df['tag_group'] = df['tags'].apply(lambda row: map_tags(remove_invalid_tag(row)))
+    map_tags = lambda tags: [TAG_GROUP_MAPPER[tag] for tag in tags]
+    df['tag_groups'] = df['tags'].apply(lambda row: map_tags(remove_invalid_tag(row)))
+
+    # Some problems doesn't map to any tag group, we remove them
+    df = df[df['tag_groups'].apply(lambda r: len(r) != 0)]
 
     # Some statements are empty, so we drop them
     df = df[df['statement'].isna() == False]
 
+    # Take the tag group that occurrs the most, and expand the dataset
+    def max_tag(m):
+        m = {k: len(list(v)) for k, v in groupby(m)}
+        return max(m, key=lambda k: m[k])
+    df['most_occurrent_tag_group'] = df['tag_groups'].apply(lambda r: max_tag(r))
+
+
+    df['statement'] = df['statement'].apply(lambda row: ' '.join(utils.preprocess_cf_statement(row)))
+
+    print('Dataset after cleaning and preprocessing:')
     print(df.head())
 
     log.info('Dataset shape after cleaning: %s', df.shape)
 
-    df['statement'] = df['statement'].apply(lambda row: ' '.join(utils.preprocess_cf_statement(row)))
-
-    print(df.head())
+    # print(df[(df['contest_id'] == 1691) & (df['problem_id'] == 'E')].tags.values)
+    # print(df[(df['contest_id'] == 1691) & (df['problem_id'] == 'E')].tag_groups.values)
+    # print(df[(df['contest_id'] == 1691) & (df['problem_id'] == 'E')].most_occurrent_tag_group)
 
     for tag_group in TAG_GROUPS:
-        print(tag_group)
-    utils.plot_wordcloud(' '.join(list(df['statement'].values)))
+        df_tag_group = df[df['most_occurrent_tag_group'] == tag_group]
+        print(f'Working on {tag_group}')
+        utils.plot_wordcloud(' '.join(list(df_tag_group['statement'].values)), plot_title=tag_group, file_name=tag_group + '.png')
 
 if __name__ == '__main__':
     main()
