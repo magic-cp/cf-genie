@@ -9,7 +9,7 @@ from pprint import PrettyPrinter
 pprint = PrettyPrinter().pprint
 
 
-import utils
+import utils as utils
 
 log = logger.get_logger(__name__)
 
