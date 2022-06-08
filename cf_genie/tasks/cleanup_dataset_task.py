@@ -16,55 +16,6 @@ pprint = PrettyPrinter().pprint
 
 log = logger.get_logger(__name__)
 
-GRAPHS = 'GRAPHS'
-MATH = 'MATH'
-GEOMETRY = 'GEOMETRY'
-OPTIMIZATION = 'OPTIMIZATION'
-ADHOC = 'ADHOC'
-SEARCH = 'SEARCH'
-
-TAG_GROUP_MAPPER = {
-    'implementation': ADHOC,
-    'data structures': ADHOC,
-    'constructive algorithms': ADHOC,
-    'brute force': ADHOC,
-    'sortings': ADHOC,
-    'strings': ADHOC,
-    'bitmasks': ADHOC,
-    'two pointers': ADHOC,
-    'hashing': ADHOC,
-    'interactive': ADHOC,
-    'string suffix structures': ADHOC,
-    '*special': ADHOC,
-    'expression parsing': ADHOC,
-    'schedules': ADHOC,
-    'binary search': SEARCH,
-    'ternary search': SEARCH,
-    'meet-in-the-middle': SEARCH,
-    'geometry': GEOMETRY,
-    'graphs': GRAPHS,
-    'dfs and similar': GRAPHS,
-    'trees': GRAPHS,
-    'dsu': GRAPHS,
-    'shortest paths': GRAPHS,
-    'graph matchings': GRAPHS,
-    'math': MATH,
-    'number theory': MATH,
-    'combinatorics': MATH,
-    'probabilities': MATH,
-    'matrices': MATH,
-    'fft': MATH,
-    'chinese remainder theorem': MATH,
-    'greedy': OPTIMIZATION,
-    'dp': OPTIMIZATION,
-    'divide and conquer': OPTIMIZATION,
-    'games': OPTIMIZATION,
-    'flows': OPTIMIZATION,
-    '2-sat': OPTIMIZATION,
-}
-
-TAG_GROUPS = set(TAG_GROUP_MAPPER.values())
-
 
 def main():
     df = utils.read_raw_dataset()
@@ -85,9 +36,9 @@ def main():
     # Some tags are not really tags, e.g. *<number>. Those tags are not on our
     # mapper, hence we can remove them using it.
     def remove_invalid_tag(tags): return [
-        tag for tag in tags if tag in TAG_GROUP_MAPPER]
+        tag for tag in tags if tag in utils.TAG_GROUP_MAPPER]
 
-    def map_tags(tags): return [TAG_GROUP_MAPPER[tag] for tag in tags]
+    def map_tags(tags): return [utils.TAG_GROUP_MAPPER[tag] for tag in tags]
     df['tag_groups'] = df['tags'].apply(
         lambda row: map_tags(remove_invalid_tag(row)))
 
@@ -104,6 +55,7 @@ def main():
     df['most_occurrent_tag_group'] = df['tag_groups'].apply(
         lambda r: max_tag(r))
 
+    # Preprocess each statement
     df['preprocessed_statement'] = df['statement'].apply(
         lambda row: utils.preprocess_cf_statement(row))
 
@@ -112,23 +64,18 @@ def main():
     df['preprocessed_statement'] = df['preprocessed_statement'].apply(
         lambda row: list(filter(lambda x: x != 'number', row)))
 
+    # Converting as a string separated by ' '
+    df['preprocessed_statement'] = df['preprocessed_statement'].apply(lambda row: ' '.join(row))
+
+    # Same for the tag groups
+    df['tag_groups'] = df['tag_groups'].apply(lambda row: ' '.join(row))
+
     log.info('Dataset after cleaning and preprocessing:')
     log.info(df.head())
     log.info('Dataset shape after cleaning: %s', df.shape)
 
-
-    for tag_group in TAG_GROUPS:
-        df_tag_group = df[df['most_occurrent_tag_group'] == tag_group]
-        print(f'Working on {tag_group}')
-        utils.plot_wordcloud(
-            ' '.join(
-                list(
-                    df_tag_group['preprocessed_statement'].str.join(' '))),
-            plot_title=tag_group,
-            file_name=tag_group +
-            '.png')
-
-    utils.write_dataframe_to_csv('dataset_cleaned.csv', df)
+    log.info('Dtypes: %s', df.dtypes['preprocessed_statement'])
+    utils.write_cleaned_dataframe_to_csv(df)
 
 
 if __name__ == '__main__':
