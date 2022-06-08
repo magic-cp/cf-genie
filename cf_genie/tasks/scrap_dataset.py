@@ -144,7 +144,8 @@ def main():
                         log.warn(e)
                         log.warn(traceback.format_exc())
                 else:
-                    log.debug('Problem already processed: %s%s', input_row[utils.CONTEST_ID], input_row[utils.PROBLEM_ID])
+                    log.debug('Problem already processed: %s%s',
+                              input_row[utils.CONTEST_ID], input_row[utils.PROBLEM_ID])
 
 
 if __name__ == '__main__':

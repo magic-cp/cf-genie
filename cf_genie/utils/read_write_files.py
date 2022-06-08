@@ -37,15 +37,23 @@ def _absolute_file_path(DIR_NAME):
 def _read_dataset(file_name: str) -> pd.DataFrame:
     return pd.read_csv(file_name)
 
+
 @_absolute_file_path(DATASET_PATH)
 def _write_dataset(file_name: str, dataframe: pd.DataFrame):
     dataframe.to_csv(file_name, index=False)
 
+
 def read_raw_dataset() -> pd.DataFrame:
     return _read_dataset('raw_cf_problems.csv')
 
-def write_dataframe_to_csv(file_name: str, dataframe: pd.DataFrame):
-    _write_dataset(file_name, dataframe)
+
+def read_cleaned_dataset() -> pd.DataFrame:
+    return _read_dataset('cleaned_cf_problems.csv')
+
+
+def write_cleaned_dataframe_to_csv(dataframe: pd.DataFrame):
+    _write_dataset('cleaned_cf_problems.csv', dataframe)
+
 
 @_absolute_file_path(PLOTS_PATH)
 def write_plot(file_name, plt):
