@@ -1,16 +1,16 @@
 import os
-from textwrap import wrap
+from pathlib import Path
 
 import pandas as pd
 
-from pathlib import Path
-
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+PROJECT_DIR = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.realpath(__file__))))
 DATASET_PATH = os.path.join(PROJECT_DIR, 'dataset')
 PLOTS_PATH = os.path.join(PROJECT_DIR, 'plots')
 
 Path(DATASET_PATH).mkdir(parents=True, exist_ok=True)
 Path(PLOTS_PATH).mkdir(parents=True, exist_ok=True)
+
 
 def _absolute_file_path(DIR_NAME):
     """
@@ -24,12 +24,15 @@ def _absolute_file_path(DIR_NAME):
         return wrapped
     return dec
 
+
 @_absolute_file_path(DATASET_PATH)
 def _read_dataset(file_name: str) -> pd.DataFrame:
     return pd.read_csv(file_name)
 
+
 def read_raw_dataset() -> pd.DataFrame:
     return _read_dataset('raw_cf_problems.csv')
+
 
 @_absolute_file_path(PLOTS_PATH)
 def write_plot(file_name, plt):

@@ -1,16 +1,15 @@
-import csv
 from itertools import groupby
+from pprint import PrettyPrinter
 
 import cf_genie.logger as logger
+import cf_genie.utils as utils
 
-logger.setup_applevel_logger(is_debug=False, file_name=__file__, simple_logs=False)
+logger.setup_applevel_logger(
+    is_debug=False, file_name=__file__, simple_logs=False)
 
-from pprint import PrettyPrinter
 
 pprint = PrettyPrinter().pprint
 
-
-import cf_genie.utils as utils
 
 log = logger.get_logger(__name__)
 
@@ -63,13 +62,15 @@ TAG_GROUP_MAPPER = {
 
 TAG_GROUPS = set(TAG_GROUP_MAPPER.values())
 
+
 def main():
     df = utils.read_raw_dataset()
 
     log.info('Raw dataset shape: %s', df.shape)
 
     # Drop unnecessary columns kept on the original CSV for documentation purposes
-    df.drop(columns=['is_interactive', 'input_spec', 'output_spec', 'url'], axis=1, inplace=True)
+    df.drop(columns=['is_interactive', 'input_spec',
+            'output_spec', 'url'], axis=1, inplace=True)
 
     # Let's take a look at the first few rows
     print('Sneak peek of the raw dataset:')
@@ -83,9 +84,12 @@ def main():
     df['tags'] = df['tags'].str.split(';', expand=False)
 
     # Some tags are not really tags, e.g. *<number>. Those tags are not on our mapper, hence we can remove them using it.
-    remove_invalid_tag = lambda tags: [tag for tag in tags if tag in TAG_GROUP_MAPPER]
-    map_tags = lambda tags: [TAG_GROUP_MAPPER[tag] for tag in tags]
-    df['tag_groups'] = df['tags'].apply(lambda row: map_tags(remove_invalid_tag(row)))
+    def remove_invalid_tag(tags): return [
+        tag for tag in tags if tag in TAG_GROUP_MAPPER]
+
+    def map_tags(tags): return [TAG_GROUP_MAPPER[tag] for tag in tags]
+    df['tag_groups'] = df['tags'].apply(
+        lambda row: map_tags(remove_invalid_tag(row)))
 
     # Some problems doesn't map to any tag group, we remove them
     df = df[df['tag_groups'].apply(lambda r: len(r) != 0)]
@@ -97,14 +101,16 @@ def main():
     def max_tag(m):
         m = {k: len(list(v)) for k, v in groupby(m)}
         return max(m, key=lambda k: m[k])
-    df['most_occurrent_tag_group'] = df['tag_groups'].apply(lambda r: max_tag(r))
+    df['most_occurrent_tag_group'] = df['tag_groups'].apply(
+        lambda r: max_tag(r))
 
-
-    df['preprocessed_statement'] = df['statement'].apply(lambda row: utils.preprocess_cf_statement(row))
+    df['preprocessed_statement'] = df['statement'].apply(
+        lambda row: utils.preprocess_cf_statement(row))
 
     # Removing `number` manually from all statements, as it's does'nt really differentiate.
     # We may need to add it later to choose a better primitive. Stuff for later
-    df['preprocessed_statement'] = df['preprocessed_statement'].apply(lambda row: list(filter(lambda x: x != 'number', row)))
+    df['preprocessed_statement'] = df['preprocessed_statement'].apply(
+        lambda row: list(filter(lambda x: x != 'number', row)))
 
     print('Dataset after cleaning and preprocessing:')
     print(df.head())
@@ -118,7 +124,9 @@ def main():
     for tag_group in TAG_GROUPS:
         df_tag_group = df[df['most_occurrent_tag_group'] == tag_group]
         print(f'Working on {tag_group}')
-        utils.plot_wordcloud(' '.join(list(df_tag_group['preprocessed_statement'].str.join(' '))), plot_title=tag_group, file_name=tag_group + '.png')
+        utils.plot_wordcloud(' '.join(list(df_tag_group['preprocessed_statement'].str.join(
+            ' '))), plot_title=tag_group, file_name=tag_group + '.png')
+
 
 if __name__ == '__main__':
     main()

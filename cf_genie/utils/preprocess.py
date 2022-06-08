@@ -16,7 +16,8 @@ stemmer = SnowballStemmer(language='english')
 
 log = logger.get_logger(__name__)
 
-STOPWORDS = set(stopwords.words('english')).union({'help', 'helping', 'helped', 'helps', 'want', 'wants', 'wanted'})
+STOPWORDS = set(stopwords.words('english')).union(
+    {'help', 'helping', 'helped', 'helps', 'want', 'wants', 'wanted'})
 
 CONTRACTIONS = {
     "n't": 'not',
