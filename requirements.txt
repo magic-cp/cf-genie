@@ -8,3 +8,4 @@ wordcloud==1.8.1
 pandas==1.4.2
 gensim==4.2.0
 requests==2.27.1
+beautifulsoup4==4.11.1
