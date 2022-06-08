@@ -160,7 +160,7 @@ cython_debug/
 #.idea/
 
 #### Project custom #####
-dataset/raw_cf_problems.csv
+dataset/
 plots/
 .DS_Store
 logs/
