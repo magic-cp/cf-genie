@@ -41,12 +41,37 @@ NUMBERS_AND_VARIABLES = r'([0-9]+|' + VARIABLE_REGEX + ')'
 MATHEMATICAL_OPERATORS = r'[+-]'
 MATHEMATICAL_EXPRESSION_REGEX = rf'^({NUMBERS_AND_VARIABLES})({MATHEMATICAL_OPERATORS}{NUMBERS_AND_VARIABLES})*$'
 
-LATEX_TOKENS = {r'\dots', r'\dot', r'\le', r'\cdot', r'\times', r'\ldot', r'\gcd',
-                r'\bmod', r'\ge', r'\text', r'\leq', r'\ldot', r'\ldots', r'\texttt',
-                r'\begin', r'\sum\limits_', r'\in', r'\to', r'\neq', r'\frac', r'\operatornam',
-                r'\sum_', r'\oplus', r'\max\limits_', r'\alpha', r'\ne', r'\geq', r'\gt',
-                r'\sigma',
-                }
+LATEX_TOKENS = {
+    r'\dots',
+    r'\dot',
+    r'\le',
+    r'\cdot',
+    r'\times',
+    r'\ldot',
+    r'\gcd',
+    r'\bmod',
+    r'\ge',
+    r'\text',
+    r'\leq',
+    r'\ldot',
+    r'\ldots',
+    r'\texttt',
+    r'\begin',
+    r'\sum\limits_',
+    r'\in',
+    r'\to',
+    r'\neq',
+    r'\frac',
+    r'\operatornam',
+    r'\sum_',
+    r'\oplus',
+    r'\max\limits_',
+    r'\alpha',
+    r'\ne',
+    r'\geq',
+    r'\gt',
+    r'\sigma',
+}
 
 
 def handle_contractions(tokens: List[str]):
@@ -56,10 +81,10 @@ def handle_contractions(tokens: List[str]):
         if tokens[i] in CONTRACTIONS:
             tokens_without_contractions[i] = CONTRACTIONS[tokens[i]]
 
-            # We need to adjust the previous token. For example, `can't` is tokenized to `ca` and `n't`, so the previous `ca` should be `can`
+            # We need to adjust the previous token. For example, `can't` is
+            # tokenized to `ca` and `n't`, so the previous `ca` should be `can`
             if i > 0 and tokens[i - 1] in CONTRACTIONS_PREVIOUS_ADJUSTMENTS:
-                tokens_without_contractions[i -
-                                            1] = CONTRACTIONS_PREVIOUS_ADJUSTMENTS[tokens[i - 1]]
+                tokens_without_contractions[i - 1] = CONTRACTIONS_PREVIOUS_ADJUSTMENTS[tokens[i - 1]]
 
             # "let's" should be relaxed to "let us", not "let is". Neither "let" or "us" are stopwords
             if i > 0 and tokens[i - 1] == 'let':
@@ -84,9 +109,10 @@ def stem_words(words: List[str]) -> List[str]:
 
 
 def remove_mathematical_expressions(tokens: List[str]) -> List[str]:
-    # TODO: This might not be enough to handle all posible math expressions. Ideally, we should try to use pylatexenc.readthedocs.io
-    #       to properly handle latex notation.
-    return [token for token in tokens if not re.match(MATHEMATICAL_EXPRESSION_REGEX, token)]
+    # TODO: This might not be enough to handle all posible math expressions. Ideally, we should try to use
+    #       pylatexenc.readthedocs.io to properly handle latex notation.
+    return [token for token in tokens if not re.match(
+        MATHEMATICAL_EXPRESSION_REGEX, token)]
 
 
 def remove_simple_latex_tokens(tokens: List[str]) -> List[str]:
@@ -117,7 +143,8 @@ def preprocess_cf_statement(text: str) -> List[str]:
     log.debug('Tokens after stopwords: %s', words)
 
     # Mathematical expression removal
-    # TODO: Circle back to this preprocessing step, as it may add value to the model to know about mathematical expressions
+    # TODO: Circle back to this preprocessing step, as it may add value to the
+    # model to know about mathematical expressions
     words = remove_mathematical_expressions(words)
     log.debug('Tokens after mathematical expressions: %s', words)
 

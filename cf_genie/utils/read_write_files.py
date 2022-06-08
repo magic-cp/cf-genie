@@ -14,13 +14,19 @@ Path(PLOTS_PATH).mkdir(parents=True, exist_ok=True)
 
 def _absolute_file_path(DIR_NAME):
     """
-    Decorator to abstract adding the DATASET_PATH to each file name. Decorated functions have to have a file_name as the first argument
+    Decorator to abstract adding the DATASET_PATH to each file name. Decorated functions have to have a file_name as the
+    first argument
     """
     def dec(func):
         def wrapped(*args, **kwargs):
             file_name = args[0]
             rest_args = args[1:]
-            return func(os.path.join(DIR_NAME, file_name), *rest_args, **kwargs)
+            return func(
+                os.path.join(
+                    DIR_NAME,
+                    file_name),
+                *rest_args,
+                **kwargs)
         return wrapped
     return dec
 

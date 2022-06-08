@@ -68,7 +68,8 @@ def main():
 
     log.info('Raw dataset shape: %s', df.shape)
 
-    # Drop unnecessary columns kept on the original CSV for documentation purposes
+    # Drop unnecessary columns kept on the original CSV for documentation
+    # purposes
     df.drop(columns=['is_interactive', 'input_spec',
             'output_spec', 'url'], axis=1, inplace=True)
 
@@ -83,7 +84,8 @@ def main():
     # Tags are split by `;`. We can split them with pandas magic
     df['tags'] = df['tags'].str.split(';', expand=False)
 
-    # Some tags are not really tags, e.g. *<number>. Those tags are not on our mapper, hence we can remove them using it.
+    # Some tags are not really tags, e.g. *<number>. Those tags are not on our
+    # mapper, hence we can remove them using it.
     def remove_invalid_tag(tags): return [
         tag for tag in tags if tag in TAG_GROUP_MAPPER]
 
@@ -95,7 +97,7 @@ def main():
     df = df[df['tag_groups'].apply(lambda r: len(r) != 0)]
 
     # Some statements are empty, so we drop them
-    df = df[df['statement'].isna() == False]
+    df = df[df['statement'].notna()]
 
     # Take the tag group that occurrs the most, and expand the dataset
     def max_tag(m):
@@ -107,8 +109,8 @@ def main():
     df['preprocessed_statement'] = df['statement'].apply(
         lambda row: utils.preprocess_cf_statement(row))
 
-    # Removing `number` manually from all statements, as it's does'nt really differentiate.
-    # We may need to add it later to choose a better primitive. Stuff for later
+    # Removing `number` manually from all statements, as it's does'nt really
+    # differentiate. We may need to add it later to choose a better primitive. Stuff for later
     df['preprocessed_statement'] = df['preprocessed_statement'].apply(
         lambda row: list(filter(lambda x: x != 'number', row)))
 
@@ -124,8 +126,13 @@ def main():
     for tag_group in TAG_GROUPS:
         df_tag_group = df[df['most_occurrent_tag_group'] == tag_group]
         print(f'Working on {tag_group}')
-        utils.plot_wordcloud(' '.join(list(df_tag_group['preprocessed_statement'].str.join(
-            ' '))), plot_title=tag_group, file_name=tag_group + '.png')
+        utils.plot_wordcloud(
+            ' '.join(
+                list(
+                    df_tag_group['preprocessed_statement'].str.join(' '))),
+            plot_title=tag_group,
+            file_name=tag_group +
+            '.png')
 
 
 if __name__ == '__main__':

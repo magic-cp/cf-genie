@@ -6,7 +6,10 @@ from wordcloud import WordCloud
 from .read_write_files import write_plot
 
 
-def plot_wordcloud(text: str, file_name: Optional[str] = None, plot_title: Optional[str] = None):
+def plot_wordcloud(
+        text: str,
+        file_name: Optional[str] = None,
+        plot_title: Optional[str] = None):
     wordcloud = WordCloud(
         background_color='black',
         width=1000,
