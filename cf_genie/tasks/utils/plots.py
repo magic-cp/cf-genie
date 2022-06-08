@@ -3,16 +3,13 @@ from typing import Optional
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
-from .read_write_files import write_plot
+from cf_genie.utils.read_write_files import write_plot
 
 
-def plot_wordcloud(
-        text: str,
-        file_name: Optional[str] = None,
-        plot_title: Optional[str] = None):
+def plot_wordcloud(text: str, file_name: Optional[str] = None, plot_title: Optional[str] = None):
     wordcloud = WordCloud(
         background_color='black',
-        width=1200,
+        width=1000,
         height=800,
         max_words=100,
         random_state=42,

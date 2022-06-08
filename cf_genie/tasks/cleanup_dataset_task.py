@@ -1,3 +1,6 @@
+"""
+Script to cleanup the dataset. Performs preprocessing over CF statements, and also remapping of tags to "tag groups"
+"""
 from itertools import groupby
 from pprint import PrettyPrinter
 
