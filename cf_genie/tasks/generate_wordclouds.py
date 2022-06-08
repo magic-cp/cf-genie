@@ -20,13 +20,14 @@ def main():
         log.info(f'Working on {tag_group}')
         log.info(df_tag_group['preprocessed_statement'].head())
         text = ' '.join(list(
-                    df_tag_group['preprocessed_statement'].values))
+            df_tag_group['preprocessed_statement'].values))
         log.debug(text)
         utils.plot_wordcloud(
             text,
             plot_title=tag_group,
             file_name=tag_group +
             '.png')
+
 
 if __name__ == '__main__':
     main()
