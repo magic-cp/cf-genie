@@ -71,11 +71,6 @@ def main():
 
     log.info('Raw dataset shape: %s', df.shape)
 
-    # Drop unnecessary columns kept on the original CSV for documentation
-    # purposes
-    df.drop(columns=['is_interactive', 'input_spec',
-            'output_spec', 'url'], axis=1, inplace=True)
-
     # Let's take a look at the first few rows
     log.info('Sneak peek of the raw dataset:')
     log.info(df.head())
@@ -132,6 +127,8 @@ def main():
             plot_title=tag_group,
             file_name=tag_group +
             '.png')
+
+    utils.write_dataframe_to_csv('dataset_cleaned.csv', df)
 
 
 if __name__ == '__main__':
