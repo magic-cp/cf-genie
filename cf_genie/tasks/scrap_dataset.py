@@ -1,3 +1,6 @@
+"""
+Scrapes the entire CF problemset and writes the dataset to a csv file.
+"""
 import argparse
 import csv
 import os

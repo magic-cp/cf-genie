@@ -1,3 +1,6 @@
+"""
+Downloads all codeforces problems and contests response and stores them in json files.
+"""
 import cf_genie.logger as logger
 from cf_genie.utils import load_contests, load_problems
 

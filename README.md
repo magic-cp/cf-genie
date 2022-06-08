@@ -28,3 +28,12 @@ python -m cf_genie.tasks.<nombre del task>
 Para ver la lista completa de tasks, ver los archivos dentro de [./cf_genie/tasks](./cf_genie/tasks)
 
 # Setup inicial
+
+Para recrear toda la data para entrenar los modelos, hay que ejecutar los siguientes scripts, en este orden:
+
+1. `load_cf_data`
+2. `generate_temp_input_for_raw_dataset`
+3. `scrap_dataset`
+4. `cleanup_dataset_task`
+
+Entre (3) y (4) hay que mover el archivo `temp/raw_dataset_file.csv` a `dataset/raw_cf_problems.csv`.

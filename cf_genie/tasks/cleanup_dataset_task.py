@@ -8,7 +8,7 @@ import cf_genie.logger as logger
 import cf_genie.utils as utils
 
 logger.setup_applevel_logger(
-    is_debug=False, file_name=__file__, simple_logs=False)
+    is_debug=False, file_name=__file__, simple_logs=True)
 
 
 pprint = PrettyPrinter().pprint
@@ -77,8 +77,8 @@ def main():
             'output_spec', 'url'], axis=1, inplace=True)
 
     # Let's take a look at the first few rows
-    print('Sneak peek of the raw dataset:')
-    print(df.head())
+    log.info('Sneak peek of the raw dataset:')
+    log.info(df.head())
 
     # few problems don't have any tag neither statement, we remove them
     df = df[df['tags'].notna()]
@@ -117,14 +117,10 @@ def main():
     df['preprocessed_statement'] = df['preprocessed_statement'].apply(
         lambda row: list(filter(lambda x: x != 'number', row)))
 
-    print('Dataset after cleaning and preprocessing:')
-    print(df.head())
-
+    log.info('Dataset after cleaning and preprocessing:')
+    log.info(df.head())
     log.info('Dataset shape after cleaning: %s', df.shape)
 
-    # print(df[(df['contest_id'] == 1691) & (df['problem_id'] == 'E')].tags.values)
-    # print(df[(df['contest_id'] == 1691) & (df['problem_id'] == 'E')].tag_groups.values)
-    # print(df[(df['contest_id'] == 1691) & (df['problem_id'] == 'E')].most_occurrent_tag_group)
 
     for tag_group in TAG_GROUPS:
         df_tag_group = df[df['most_occurrent_tag_group'] == tag_group]
