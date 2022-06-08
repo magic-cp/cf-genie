@@ -7,3 +7,4 @@ tqdm==4.64.0
 wordcloud==1.8.1
 pandas==1.4.2
 gensim==4.2.0
+requests==2.27.1

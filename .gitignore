@@ -164,3 +164,4 @@ dataset/raw_cf_problems.csv
 plots/
 .DS_Store
 logs/
+temp/

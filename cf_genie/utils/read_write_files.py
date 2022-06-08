@@ -7,9 +7,11 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.realpath(__file__))))
 DATASET_PATH = os.path.join(PROJECT_DIR, 'dataset')
 PLOTS_PATH = os.path.join(PROJECT_DIR, 'plots')
+TEMP_PATH = os.path.join(PROJECT_DIR, 'temp')
 
 Path(DATASET_PATH).mkdir(parents=True, exist_ok=True)
 Path(PLOTS_PATH).mkdir(parents=True, exist_ok=True)
+Path(TEMP_PATH).mkdir(parents=True, exist_ok=True)
 
 
 def _absolute_file_path(DIR_NAME):
