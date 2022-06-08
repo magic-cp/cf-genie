@@ -9,11 +9,12 @@ import os
 from dataclasses import dataclass
 from typing import List
 
-import cf_genie.utils.read_write_files as read_write_files
 import cf_genie.utils.cf_api as cf_api
+import cf_genie.utils.read_write_files as read_write_files
 
 CF_PROBLEMS = os.path.join(read_write_files.TEMP_PATH, 'problems.json')
 CF_CONTESTS = os.path.join(read_write_files.TEMP_PATH, 'contests.json')
+PROBLEM_CONTEST_IDS_CSV = os.path.join(read_write_files.TEMP_PATH, 'problem_contest_ids.csv')
 
 
 @dataclass
