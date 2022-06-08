@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from pprint import PrettyPrinter
 
-APP_LOGGER_NAME = 'cf_topic_modeling'
+APP_LOGGER_NAME = 'cf_genie'
 
 LOGS_FOLDER = os.path.join(os.path.dirname(
     os.path.dirname(os.path.realpath(__file__))), 'logs')
