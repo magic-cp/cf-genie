@@ -7,7 +7,7 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.tokenize import word_tokenize
 
-import logger
+import cf_genie.logger as logger
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -16,7 +16,7 @@ stemmer = SnowballStemmer(language='english')
 
 log = logger.get_logger(__name__)
 
-STOPWORDS = set(stopwords.words('english'))
+STOPWORDS = set(stopwords.words('english')).union({'help', 'helping', 'helped', 'helps', 'want', 'wants', 'wanted'})
 
 CONTRACTIONS = {
     "n't": 'not',

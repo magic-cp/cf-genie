@@ -5,7 +5,7 @@ import pandas as pd
 
 from pathlib import Path
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 DATASET_PATH = os.path.join(PROJECT_DIR, 'dataset')
 PLOTS_PATH = os.path.join(PROJECT_DIR, 'plots')
 

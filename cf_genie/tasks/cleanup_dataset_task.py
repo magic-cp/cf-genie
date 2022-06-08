@@ -1,16 +1,16 @@
 import csv
 from itertools import groupby
 
-import logger
+import cf_genie.logger as logger
 
-logger.setup_applevel_logger(is_debug=False, file_name='app.logs', simple_logs=False)
+logger.setup_applevel_logger(is_debug=False, file_name=__file__, simple_logs=False)
 
 from pprint import PrettyPrinter
 
 pprint = PrettyPrinter().pprint
 
 
-import utils
+import cf_genie.utils as utils
 
 log = logger.get_logger(__name__)
 
@@ -100,7 +100,11 @@ def main():
     df['most_occurrent_tag_group'] = df['tag_groups'].apply(lambda r: max_tag(r))
 
 
-    df['statement'] = df['statement'].apply(lambda row: ' '.join(utils.preprocess_cf_statement(row)))
+    df['preprocessed_statement'] = df['statement'].apply(lambda row: utils.preprocess_cf_statement(row))
+
+    # Removing `number` manually from all statements, as it's does'nt really differentiate.
+    # We may need to add it later to choose a better primitive. Stuff for later
+    df['preprocessed_statement'] = df['preprocessed_statement'].apply(lambda row: list(filter(lambda x: x != 'number', row)))
 
     print('Dataset after cleaning and preprocessing:')
     print(df.head())
@@ -114,7 +118,7 @@ def main():
     for tag_group in TAG_GROUPS:
         df_tag_group = df[df['most_occurrent_tag_group'] == tag_group]
         print(f'Working on {tag_group}')
-        utils.plot_wordcloud(' '.join(list(df_tag_group['statement'].values)), plot_title=tag_group, file_name=tag_group + '.png')
+        utils.plot_wordcloud(' '.join(list(df_tag_group['preprocessed_statement'].str.join(' '))), plot_title=tag_group, file_name=tag_group + '.png')
 
 if __name__ == '__main__':
     main()
