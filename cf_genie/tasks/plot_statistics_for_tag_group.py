@@ -22,19 +22,10 @@ def main():
     log.info('Dataframe aggegated by most_occurrent_tag_group')
     log.info(df_grouped_by_tag_group.head())
 
-    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
     labels = df_grouped_by_tag_group.index
     sizes = df_grouped_by_tag_group.values
 
-    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
-    fig1, ax1 = plt.subplots(figsize=(6, 5))
-
-    ax1.pie(sizes, labels=labels, autopct='%1.1f%%',
-            startangle=90)
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    ax1.set_title('Distribution of all tag group', pad=20)
-    # plt.show()
-    utils.write_plot('pie_chart_all_tag_groups.png', plt)
+    utils.plot_pie_chart(labels, sizes, 'pie_chart_all_tag_groups.png', 'Distribution of all tag group')
 
     log.info('Plotting histogram for all tag groups')
 
@@ -55,15 +46,7 @@ def main():
 
     labels = df_grouped_by_tag_group.index
     sizes = df_grouped_by_tag_group.values
-
-    fig1, ax1 = plt.subplots(figsize=(6, 5))
-
-    ax1.pie(sizes, labels=labels, autopct='%1.1f%%',
-            startangle=90)
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    ax1.set_title('Distribution of all tag group', pad=20)
-    # plt.show()
-    utils.write_plot('pie_chart_without_adhoc_tag_groups.png', plt)
+    utils.plot_pie_chart(labels, sizes, 'pie_chart_all_tag_groups_except_adhoc.png', 'Distribution of all tag group except ADHOC')
 
     plt.figure(figsize=(8, 5))
     plt.bar(df_grouped_by_tag_group.index, df_grouped_by_tag_group.values, color=COLORS[1:])
