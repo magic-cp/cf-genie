@@ -11,3 +11,4 @@ requests==2.27.1
 beautifulsoup4==4.11.1
 tqdm==4.64.0
 scikit-learn==1.1.1
+hyperopt==0.2.7
