@@ -8,7 +8,7 @@ from cf_genie.utils.cf_utils import (PROBLEM_CONTEST_IDS_CSV, load_contests,
                                      load_problems)
 from cf_genie.utils.constants import TAG_GROUP_MAPPER, TAG_GROUPS
 from cf_genie.utils.machine_utils import get_num_of_cores
-from cf_genie.utils.plots import plot_wordcloud, plot_pie_chart
+from cf_genie.utils.plots import plot_pie_chart, plot_wordcloud
 from cf_genie.utils.preprocess import preprocess_cf_statement
 from cf_genie.utils.read_write_files import (TEMP_PATH, read_cleaned_dataset,
                                              read_raw_dataset,

@@ -30,6 +30,7 @@ def plot_wordcloud(
     else:
         plt.show()
 
+
 def plot_pie_chart(labels, sizes, file_name: Optional[str] = None, plot_title: Optional[str] = None):
     fig1, ax1 = plt.subplots(figsize=(6, 5))
 

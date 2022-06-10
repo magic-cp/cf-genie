@@ -46,7 +46,8 @@ def main():
 
     labels = df_grouped_by_tag_group.index
     sizes = df_grouped_by_tag_group.values
-    utils.plot_pie_chart(labels, sizes, 'pie_chart_all_tag_groups_except_adhoc.png', 'Distribution of all tag group except ADHOC')
+    utils.plot_pie_chart(labels, sizes, 'pie_chart_all_tag_groups_except_adhoc.png',
+                         'Distribution of all tag group except ADHOC')
 
     plt.figure(figsize=(8, 5))
     plt.bar(df_grouped_by_tag_group.index, df_grouped_by_tag_group.values, color=COLORS[1:])

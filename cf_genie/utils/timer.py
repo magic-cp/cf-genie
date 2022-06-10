@@ -1,6 +1,7 @@
+import time
+
 import cf_genie.logger as logger
 
-import time
 
 class Timer:
     """Context handler to measure time of a function"""
