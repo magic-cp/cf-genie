@@ -166,3 +166,4 @@ plots/
 logs/
 temp/
 .vscode/launch.json
+mongo-data/
