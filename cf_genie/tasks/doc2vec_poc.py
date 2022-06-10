@@ -36,9 +36,8 @@ def main():
 
     train, test = train_test_split(df, test_size=0.2, random_state=42, stratify=df['most_occurrent_tag_group'])
 
-    def tagged_doc(r): return TaggedDocument(
-        words=r['preprocessed_statement'].split(' '), tags=[
-            r.most_occurrent_tag_group])
+    def tagged_doc(r):
+        return TaggedDocument(words=r['preprocessed_statement'].split(' '), tags=[r.name])
     train_tagged = train.apply(tagged_doc, axis=1)
     test_tagged = test.apply(tagged_doc, axis=1)
 
@@ -47,7 +46,7 @@ def main():
 
     # Initializtion of the model
     model = Doc2Vec(vector_size=50, negative=5, hs=0, min_count=2, sample=0, workers=cores, epochs=40)
-    model.build_vocab([x for x in tqdm(train_tagged.values)])
+    model.build_vocab(train_tagged.values)
 
     log.info(f"Word 'point' appeared {model.wv.get_vecattr('point', 'count')} times in the training corpus.")
 
@@ -56,20 +55,18 @@ def main():
 
     log.info('Demo infering: %s', model.infer_vector(['point', 'number']))
 
-    def get_ranks(tagged_docs):
+    def get_ranks(tagged_docs, model):
         ranks = []
-        second_ranks = []
-        for doc_id in tagged_docs.index:
-            log.debug('doc_id: %s', doc_id)
-            inferred_vector = model.infer_vector(tagged_docs[doc_id].words)
-            log.debug('Inferred vector for doc id #%s: %s', doc_id, inferred_vector)
-            sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
-            log.debug('Similarity scores for doc id #%s: %s', doc_id, sims)
-            rank = [docid for docid, sim in sims].index(tagged_docs[doc_id].tags[0])
-            ranks.append((doc_id, rank))
-
-            second_ranks.append(sims[1][0])
-        return ranks, second_ranks
+        with Timer("Doc2Vec inferring", log=log):
+            for doc_id in tqdm(tagged_docs.index, desc='Doc2Vec inferring'):
+                log.debug('doc_id: %s', doc_id)
+                inferred_vector = model.infer_vector(tagged_docs[doc_id].words)
+                log.debug('Inferred vector for doc id #%s: %s', doc_id, inferred_vector)
+                sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
+                log.debug('Similarity scores for doc id #%s: %s', doc_id, sims)
+                rank = [docid for docid, sim in sims].index(doc_id)
+                ranks.append(rank)
+        return ranks
 
     def plot_rank_distribution(ranks, file_name, plot_title):
         # Values near 0 indicate that the inferred vector is very similar to the tag.
@@ -84,40 +81,29 @@ def main():
         total_sum = sum(sizes)
         log.info('The model predicted the primary rank with an accuracy of %.2f', 100 * counter.get(0) / total_sum)
 
-    ranks, _ = get_ranks(train_tagged)
+    ranks = get_ranks(train_tagged, model)
     log.info('Plotting for principal ranks on training data')
-    plot_rank_distribution([r[1] for r in ranks],
+    plot_rank_distribution(ranks,
                            'pie_chart_most_similar_tags_on_training_data.png',
                            'Ranking of most similar tags on training data')
 
-    test_ranks, _ = get_ranks(test_tagged)
-    log.info('Plotting for principal ranks on test data')
-    plot_rank_distribution([r[1] for r in test_ranks],
-                           'pie_chart_most_similar_tags_on_test_data.png',
-                           'Ranking of most similar tags on test data')
+    tagged_docs = df.apply(tagged_doc, axis=1)
+    modelall = Doc2Vec(vector_size=50, negative=5, hs=0, min_count=2, sample=0, workers=cores, epochs=40)
 
-    # Let's pick a random document from the train and test data and see what the model predicts.
-    train_idx = random.choice(train_tagged.index)
-    test_idx = random.choice(test_tagged.index)
+    modelall.build_vocab(tagged_docs.values)
 
-    log.info('Train idx: %s', train_idx)
-    log.info('Train Problem id: %s%s', df.iloc[train_idx].contest_id, df.iloc[train_idx].problem_id)
+    log.info(f"Word 'point' appeared {modelall.wv.get_vecattr('point', 'count')} times in the entire corpus.")
 
-    log.info('Tag group for train idx: %s', df.iloc[train_idx].most_occurrent_tag_group)
+    with Timer('Word2Vec training with all data', log=log):
+        modelall.train(tagged_docs, total_examples=modelall.corpus_count, epochs=modelall.epochs)
 
-    inferred_vector = model.infer_vector(train_tagged[train_idx].words)
-    sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
-    log.info('Predictions of tag group for train idx: %s', sims)
+    log.info('Demo infering: %s', modelall.infer_vector(['point', 'number']))
 
-    log.info('Test idx: %s', test_idx)
-    log.info('Test Problem id: %s%s', df.iloc[test_idx].contest_id, df.iloc[test_idx].problem_id)
-
-    log.info('Tag group for test idx: %s', df.iloc[test_idx].most_occurrent_tag_group)
-
-    inferred_vector = model.infer_vector(test_tagged[test_idx].words)
-    sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
-    log.info('Predictions of tag group for test idx: %s', sims)
-
+    ranks = get_ranks(tagged_docs, modelall)
+    log.info('Plotting for principal ranks on all data')
+    plot_rank_distribution(ranks,
+                           'pie_chart_most_similar_tags_on_all_data.png',
+                           'Ranking of most similar tags on all data')
 
 if __name__ == '__main__':
     main()
