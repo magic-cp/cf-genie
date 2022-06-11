@@ -3,18 +3,17 @@ Run hyperopt on doc2vec to see what give us our best parameters
 """
 
 import collections
+import pickle
 
 import pandas as pd
-import pickle
 from gensim.models import Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
-from hyperopt import STATUS_OK, Trials, fmin, hp, space_eval, tpe
-from hyperopt.mongoexp import MongoTrials
+from hyperopt import STATUS_OK, hp
 from tqdm import tqdm
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-from cf_genie.utils import Timer
+from cf_genie.utils import Timer, run_hyperopt
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -69,7 +68,6 @@ def objective(tagged_docs: pd.DataFrame):
 
 
 def main():
-    trials = Trials()
     log.info('Generating word2vec model...')
     df = utils.read_cleaned_dataset()
 
@@ -82,21 +80,13 @@ def main():
     def tagged_doc(r): return TaggedDocument(words=r['preprocessed_statement'].split(' '), tags=[r.name])
     tagged_docs = df.apply(tagged_doc, axis=1)
 
-    trials = MongoTrials('mongo://localhost:27017/admin/jobs', exp_key='doc2vec')
     with Timer('Hyperopt search for best parameters for Doc2Vec', log=log):
-        best_params = fmin(
-            objective(tagged_docs),
-            SPACE,
-            algo=tpe.suggest,
-            trials=trials,
-            show_progressbar=True,
-            max_evals=40)
+        hyperopt_info = run_hyperopt(objective(tagged_docs), SPACE, mongo_exp_key='doc2vec')
 
-    log.info('Best parameters found %s', space_eval(SPACE, best_params))
+    log.info('Best parameters found %s', hyperopt_info.best_params_evaluated_space)
 
-    log.info('Best trial: %s', trials.best_trial)
-    log.info('Best trial params: %s', trials.argmin)
-    log.info('Best trial model: %s', pickle.loads(trials.trial_attachments(trials.best_trial)['model']))
+    log.info('Best trial model: %s', hyperopt_info.best_model)
+
 
 if __name__ == '__main__':
     main()

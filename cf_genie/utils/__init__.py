@@ -7,6 +7,7 @@ from cf_genie.utils.cf_dataset import (CONTEST_ID,
 from cf_genie.utils.cf_utils import (PROBLEM_CONTEST_IDS_CSV, load_contests,
                                      load_problems)
 from cf_genie.utils.constants import TAG_GROUP_MAPPER, TAG_GROUPS
+from cf_genie.utils.hyperopt_wrapper import HyperoptRun, run_hyperopt
 from cf_genie.utils.machine_utils import CORES, get_num_of_cores
 from cf_genie.utils.plots import plot_pie_chart, plot_wordcloud
 from cf_genie.utils.preprocess import preprocess_cf_statement
