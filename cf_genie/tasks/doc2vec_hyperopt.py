@@ -7,10 +7,9 @@ import collections
 import pandas as pd
 from gensim.models import Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
-from hyperopt import STATUS_OK, Trials, fmin, hp, tpe, space_eval
-from tqdm import tqdm
-
+from hyperopt import STATUS_OK, Trials, fmin, hp, space_eval, tpe
 from hyperopt.mongoexp import MongoTrials
+from tqdm import tqdm
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
@@ -82,7 +81,13 @@ def main():
 
     trials = MongoTrials('mongo://localhost:27017/admin/jobs', exp_key='exp1')
     with Timer('Hyperopt search for best parameters for Doc2Vec', log=log):
-        best_params = fmin(objective(tagged_docs), SPACE, algo=tpe.suggest, trials=trials, show_progressbar=True, max_evals=40)
+        best_params = fmin(
+            objective(tagged_docs),
+            SPACE,
+            algo=tpe.suggest,
+            trials=trials,
+            show_progressbar=True,
+            max_evals=40)
 
     log.info('Best parameters found %s', space_eval(SPACE, best_params))
     log.info('Type of best_params: %s', type(best_params))

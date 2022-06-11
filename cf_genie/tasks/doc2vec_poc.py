@@ -105,5 +105,6 @@ def main():
                            'pie_chart_most_similar_tags_on_all_data.png',
                            'Ranking of most similar tags on all data')
 
+
 if __name__ == '__main__':
     main()
