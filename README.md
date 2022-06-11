@@ -48,11 +48,9 @@ Para levantar el container de docker, solo hay que levantar la red con:
 docker-compose up -d
 ```
 
-{% note %}
-
-ℹ️ Incluido en la red esta un contenedor de `mongo-express`, que es un cliente web sencillo para consultar la base de datos. Se puede acceder a este cliente en `localhost:8081`
-
-{% endnote %}
+> ℹ️ Sobre `mongo-express`
+>
+> Incluido en la red esta un contenedor de `mongo-express`, que es un cliente web sencillo para consultar la base de datos. Se puede acceder a este cliente en `localhost:8081`
 
 El mongodb path para conectarse seria `mongo://localhost:27017/admin/jobs`. No hay autenticacion en este esquema (no hace falta!).
 
@@ -71,8 +69,4 @@ Cada worker va a operar de la siguiente manera:
 1. Se escoge un documento de MongoDB que no se haya evaluado. Cada documento tiene la información necesaria para poder evaluar la función
 2. Cuando el worker termina de entrenar el modelo, va a actualizar el documento con los resultados (usualmente el score y el modelo serializado con `pickle`)
 
-{% note %}
-
-🚀 Se puede tener una instancia de MongoDB en la nube, y tener varios workers como maquinas dedicaddas para poder acelerar el proceso. Stonks 📈
-
-{% endnote %}
+> 🚀 Se puede tener una instancia de MongoDB en la nube, y tener varios workers como maquinas dedicaddas para poder acelerar el proceso. Stonks 📈
