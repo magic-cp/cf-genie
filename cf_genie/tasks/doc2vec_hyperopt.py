@@ -7,8 +7,10 @@ import collections
 import pandas as pd
 from gensim.models import Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
-from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
+from hyperopt import STATUS_OK, Trials, fmin, hp, tpe, space_eval
 from tqdm import tqdm
+
+from hyperopt.mongoexp import MongoTrials
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
@@ -58,7 +60,7 @@ def objective(tagged_docs: pd.DataFrame):
         return {
             'loss': -simple_score,
             'status': STATUS_OK,
-            'vector_size': params['vector_size'],
+            'params': params,
         }
 
     return fn
@@ -78,11 +80,14 @@ def main():
     def tagged_doc(r): return TaggedDocument(words=r['preprocessed_statement'].split(' '), tags=[r.name])
     tagged_docs = df.apply(tagged_doc, axis=1)
 
+    trials = MongoTrials('mongo://localhost:27017/admin/jobs', exp_key='exp1')
     with Timer('Hyperopt search for best parameters for Doc2Vec', log=log):
-        best_params = fmin(objective(tagged_docs), SPACE, algo=tpe.suggest, trials=trials, show_progressbar=True, max_evals=100)
+        best_params = fmin(objective(tagged_docs), SPACE, algo=tpe.suggest, trials=trials, show_progressbar=True, max_evals=40)
 
-    log.info('Best parameters found %s', best_params)
+    log.info('Best parameters found %s', space_eval(SPACE, best_params))
+    log.info('Type of best_params: %s', type(best_params))
     log.info('Trials: %s', trials)
+    log.info('Space: %s', SPACE)
 
 
 if __name__ == '__main__':
