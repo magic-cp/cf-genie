@@ -5,6 +5,7 @@ Run hyperopt on doc2vec to see what give us our best parameters
 import collections
 
 import pandas as pd
+import pickle
 from gensim.models import Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
 from hyperopt import STATUS_OK, Trials, fmin, hp, space_eval, tpe
@@ -59,7 +60,9 @@ def objective(tagged_docs: pd.DataFrame):
         return {
             'loss': -simple_score,
             'status': STATUS_OK,
-            'params': params,
+            'attachments': {
+                'model': pickle.dumps(model),
+            }
         }
 
     return fn
@@ -79,7 +82,7 @@ def main():
     def tagged_doc(r): return TaggedDocument(words=r['preprocessed_statement'].split(' '), tags=[r.name])
     tagged_docs = df.apply(tagged_doc, axis=1)
 
-    trials = MongoTrials('mongo://localhost:27017/admin/jobs', exp_key='exp1')
+    trials = MongoTrials('mongo://localhost:27017/admin/jobs', exp_key='doc2vec')
     with Timer('Hyperopt search for best parameters for Doc2Vec', log=log):
         best_params = fmin(
             objective(tagged_docs),
@@ -90,10 +93,10 @@ def main():
             max_evals=40)
 
     log.info('Best parameters found %s', space_eval(SPACE, best_params))
-    log.info('Type of best_params: %s', type(best_params))
-    log.info('Trials: %s', trials)
-    log.info('Space: %s', SPACE)
 
+    log.info('Best trial: %s', trials.best_trial)
+    log.info('Best trial params: %s', trials.argmin)
+    log.info('Best trial model: %s', pickle.loads(trials.trial_attachments(trials.best_trial)['model']))
 
 if __name__ == '__main__':
     main()
