@@ -1,12 +1,11 @@
 import pickle
+
+import pandas as pd
 from gensim.models import FastText
 from hyperopt import STATUS_OK
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-
-import pandas as pd
-
 from cf_genie.utils.timer import Timer
 
 logger.setup_applevel_logger(
@@ -23,7 +22,11 @@ def model_fn(df: pd.DataFrame):
         log.info('FastText model: %s', model)
 
         with Timer(f'FastText training {model}', log=log):
-            model.train(df['preprocessed_statement'].values, total_examples=model.corpus_count, epochs=model.epochs, compute_loss=True)
+            model.train(
+                df['preprocessed_statement'].values,
+                total_examples=model.corpus_count,
+                epochs=model.epochs,
+                compute_loss=True)
 
         # return {
         #     'loss': -1,
@@ -34,6 +37,7 @@ def model_fn(df: pd.DataFrame):
         # }
         return model
     return wrapped
+
 
 def main():
     log.info('Generating word2vec model...')
