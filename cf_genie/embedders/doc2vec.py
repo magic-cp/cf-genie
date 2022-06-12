@@ -1,9 +1,6 @@
-"""
-Run hyperopt on doc2vec to see what give us our best parameters
-"""
-
 import collections
 import pickle
+from typing import Callable, List
 
 import pandas as pd
 from gensim.models import Doc2Vec
@@ -13,8 +10,8 @@ from tqdm import tqdm
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-from cf_genie.embedders import Doc2VecEmbedder
-from cf_genie.utils import Timer, run_hyperopt
+from cf_genie.embedders.base import BaseEmbedder
+from cf_genie.utils import Timer
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -22,8 +19,7 @@ logger.setup_applevel_logger(
 
 log = logger.get_logger(__name__)
 
-
-SPACE = {
+SEARCH_SPACE = {
     'vector_size': hp.choice('vector_size', [50, 100, 200, 300]),
     'dm': hp.choice('dm', [0, 1]),
     'window': hp.choice('window', [4, 5]),
@@ -31,19 +27,19 @@ SPACE = {
 }
 
 
-def objective(tagged_docs: pd.DataFrame):
+def objective(tagged_docs: List[TaggedDocument]):
     def fn(params):
         log.info('Building word2vec model with params: %s', params)
         model = Doc2Vec(**params, negative=5, min_count=2, sample=0, workers=utils.CORES, epochs=40)
 
-        model.build_vocab(tagged_docs.values)
+        model.build_vocab(tagged_docs)
 
         with Timer(f'Word2Vec training {model}', log=log):
             model.train(tagged_docs, total_examples=model.corpus_count, epochs=model.epochs)
 
         ranks = []
         with Timer(f"Doc2Vec inferring {model}", log=log):
-            for doc_id in tqdm(tagged_docs.index, desc='Doc2Vec inferring'):
+            for doc_id in tqdm(range(len(tagged_docs)), desc='Doc2Vec inferring'):
                 log.debug('doc_id: %s', doc_id)
                 inferred_vector = model.infer_vector(tagged_docs[doc_id].words)
                 log.debug('Inferred vector for doc id #%s: %s', doc_id, inferred_vector)
@@ -68,27 +64,19 @@ def objective(tagged_docs: pd.DataFrame):
     return fn
 
 
-def main():
-    log.info('Generating word2vec model...')
-    df = utils.read_cleaned_dataset()
+class Doc2VecEmbedder(BaseEmbedder):
+    def __init__(self, docs_to_train_embedder: List[List[str]]):
+        super().__init__(docs_to_train_embedder)
 
-    log.info('Dataset:')
-    log.info(df.head())
+        tagged_docs = self._tagged_docs()
 
-    cores = utils.get_num_of_cores()
-    log.info('Doc2Vec model will use %s cores', cores)
+        hyperopt_info = utils.run_hyperopt(objective(tagged_docs), SEARCH_SPACE, mongo_exp_key=self.embedder_name)
 
-    def tagged_doc(r): return TaggedDocument(words=r['preprocessed_statement'].split(' '), tags=[r.name])
-    tagged_docs = df.apply(tagged_doc, axis=1)
+        self.model: Doc2Vec = hyperopt_info.best_model
+        self.hyperopt_info = hyperopt_info
 
-    with Timer('Hyperopt search for best parameters for Doc2Vec', log=log):
-        embedder = Doc2VecEmbedder(df['preprocessed_statement'].to_numpy())
-        hyperopt_info = embedder.hyperopt_info
+    def _tagged_docs(self) -> List[str]:
+        return [TaggedDocument(words=doc, tags=[i]) for i, doc in enumerate(self.docs_to_train_embedder)]
 
-    log.info('Best parameters found %s', hyperopt_info.best_params_evaluated_space)
-
-    log.info('Best trial model: %s', embedder.model)
-
-
-if __name__ == '__main__':
-    main()
+    def embed(self, doc: List[str]) -> pd.Series:
+        return self.model.infer_vector(doc)

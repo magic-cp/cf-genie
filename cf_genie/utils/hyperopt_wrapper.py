@@ -29,7 +29,8 @@ def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None
     The model_fn has to be a function that returns a dictionary with the following keys:
     : loss : float, loss value
     : status : string, status of the trial
-    : attachments : dictionary, attachments to the trial. You can add any keys here, but the following keys are reserved:
+    : attachments : dictionary, attachments to the trial. You can add any keys here, but the
+                    following keys are reserved:
         - model : pickle.dumps(model) object, the model to be stored in the trial
     """
 
