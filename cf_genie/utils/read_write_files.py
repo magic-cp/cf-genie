@@ -59,4 +59,6 @@ def write_cleaned_dataframe_to_csv(dataframe: pd.DataFrame):
 
 @_absolute_file_path(PLOTS_PATH)
 def write_plot(file_name, plt):
+    dir_name_of_file = os.path.join(PROJECT_DIR, os.path.dirname(file_name))
+    Path(dir_name_of_file).mkdir(parents=True, exist_ok=True)
     plt.savefig(file_name)

@@ -30,17 +30,20 @@ def main():
     df = df[df['tags'].notna()]
     df = df[df['statement'].notna()]
 
-    # Tags are split by `;`. We can split them with pandas magic
-    df['tags'] = df['tags'].str.split(';', expand=False)
-
-    # Some tags are not really tags, e.g. *<number>. Those tags are not on our
-    # mapper, hence we can remove them using it.
     def remove_invalid_tag(tags): return [
         tag for tag in tags if tag in utils.TAG_GROUP_MAPPER]
 
-    def map_tags(tags): return [utils.TAG_GROUP_MAPPER[tag] for tag in tags]
-    df['tag_groups'] = df['tags'].apply(
-        lambda row: map_tags(remove_invalid_tag(row)))
+    # Tags are split by `;`. We can split them with pandas magic
+    df['cleaned_tags'] = df['tags'].apply(lambda tags: ';'.join(remove_invalid_tag(tags.split(';'))))
+    df = df[df['cleaned_tags'] != '']
+    log.info('Head of tags: %s', df['tags'].head())
+
+    # Some tags are not really tags, e.g. *<number>. Those tags are not on our
+    # mapper, hence we can remove them using it.
+
+    def map_tags(tags):
+        return [utils.TAG_GROUP_MAPPER[tag] for tag in tags]
+    df['tag_groups'] = df['cleaned_tags'].apply(lambda row: map_tags(row.split(';')))
 
     # Some problems doesn't map to any tag group, we remove them
     df = df[df['tag_groups'].apply(lambda r: len(r) != 0)]
