@@ -19,13 +19,13 @@ def main():
         df_tag_group = df[df['most_occurrent_tag_group'] == tag_group]
         log.info(f'Working on {tag_group}')
         log.info(df_tag_group['preprocessed_statement'].head())
-        text = ' '.join(list(
-            df_tag_group['preprocessed_statement'].values))
+        text = ' '.join(
+            df_tag_group['preprocessed_statement'].str.join(' ').values)
         log.debug(text)
         utils.plot_wordcloud(
             text,
             plot_title=tag_group,
-            file_name=tag_group +
+            file_name='wordclouds/' + tag_group +
             '.png')
 
 

@@ -25,7 +25,7 @@ def main():
     labels = df_grouped_by_tag_group.index
     sizes = df_grouped_by_tag_group.values
 
-    utils.plot_pie_chart(labels, sizes, 'pie_chart_all_tag_groups.png', 'Distribution of all tag group')
+    utils.plot_pie_chart(labels, sizes, 'pie-charts/pie_chart_all_tag_groups.png', 'Distribution of all tag group')
 
     log.info('Plotting histogram for all tag groups')
 
@@ -36,7 +36,7 @@ def main():
     plt.title('Number of problems per tag group', fontsize=16)
     # plt.show()
 
-    utils.write_plot('histogram_all_tag_groups.png', plt)
+    utils.write_plot('histograms/histogram_all_tag_groups.png', plt)
 
     df_grouped_by_tag_group = df_grouped_by_tag_group[df_grouped_by_tag_group.index != 'ADHOC']
     log.info('Removing ADHOC out of the equation')
@@ -46,7 +46,7 @@ def main():
 
     labels = df_grouped_by_tag_group.index
     sizes = df_grouped_by_tag_group.values
-    utils.plot_pie_chart(labels, sizes, 'pie_chart_all_tag_groups_except_adhoc.png',
+    utils.plot_pie_chart(labels, sizes, 'pie-charts/pie_chart_all_tag_groups_except_adhoc.png',
                          'Distribution of all tag group except ADHOC')
 
     plt.figure(figsize=(8, 5))
@@ -56,7 +56,7 @@ def main():
     plt.title('Number of problems per tag group (without ADHOC)', fontsize=16)
     # plt.show()
 
-    utils.write_plot('histogram_without_adhoc_tag_groups.png', plt)
+    utils.write_plot('histograms/histogram_without_adhoc_tag_groups.png', plt)
 
 
 if __name__ == '__main__':
