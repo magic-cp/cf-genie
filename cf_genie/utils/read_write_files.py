@@ -48,7 +48,9 @@ def read_raw_dataset() -> pd.DataFrame:
 
 
 def read_cleaned_dataset() -> pd.DataFrame:
-    return _read_dataset('cleaned_cf_problems.csv')
+    df = _read_dataset('cleaned_cf_problems.csv')
+    df['preprocessed_statement'] = df['preprocessed_statement'].apply(lambda x: x.split(' '))
+    return df
 
 
 def write_cleaned_dataframe_to_csv(dataframe: pd.DataFrame):

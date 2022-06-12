@@ -80,3 +80,6 @@ class Doc2VecEmbedder(BaseEmbedder):
 
     def embed(self, doc: List[str]) -> pd.Series:
         return self.model.infer_vector(doc)
+
+    def __str__(self):
+        return self.model.__str__()
