@@ -41,14 +41,19 @@ def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None
         trials = MongoTrials('mongo://localhost:27017/cf_genie/jobs', exp_key=mongo_exp_key)
     else:
         trials = Trials()
+
+    kwargs = {
+        'algo': tpe.suggest,
+        'show_progressbar': True,
+        'trials': trials,
+        'max_evals': 100,
+        **fmin_kwrgs
+    }
+    print(kwargs)
     best_params = fmin(
         model_fn,
         search_space,
-        algo=tpe.suggest,
-        trials=trials,
-        show_progressbar=True,
-        max_evals=40,
-        **fmin_kwrgs)
+        **kwargs)
 
     return HyperoptRun(
         best_params, space_eval(
