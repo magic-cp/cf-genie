@@ -14,5 +14,5 @@ from cf_genie.utils.preprocess import preprocess_cf_statement
 from cf_genie.utils.read_write_files import (TEMP_PATH, read_cleaned_dataset,
                                              read_raw_dataset,
                                              write_cleaned_dataframe_to_csv,
-                                             write_plot)
+                                             write_plot, get_model_path)
 from cf_genie.utils.timer import Timer
