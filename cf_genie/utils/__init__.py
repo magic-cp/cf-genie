@@ -11,8 +11,9 @@ from cf_genie.utils.hyperopt_wrapper import HyperoptRun, run_hyperopt
 from cf_genie.utils.machine_utils import CORES, get_num_of_cores
 from cf_genie.utils.plots import plot_pie_chart, plot_wordcloud
 from cf_genie.utils.preprocess import preprocess_cf_statement
-from cf_genie.utils.read_write_files import (TEMP_PATH, read_cleaned_dataset,
+from cf_genie.utils.read_write_files import (TEMP_PATH, get_model_path,
+                                             read_cleaned_dataset,
                                              read_raw_dataset,
                                              write_cleaned_dataframe_to_csv,
-                                             write_plot, get_model_path)
+                                             write_plot)
 from cf_genie.utils.timer import Timer

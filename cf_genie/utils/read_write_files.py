@@ -65,5 +65,6 @@ def write_plot(file_name, plt):
     Path(dir_name_of_file).mkdir(parents=True, exist_ok=True)
     plt.savefig(file_name)
 
+
 def get_model_path(model_name):
     return os.path.join(MODELS_PATH, model_name)
