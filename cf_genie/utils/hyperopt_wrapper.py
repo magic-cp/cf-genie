@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from hyperopt import Trials, fmin, space_eval, tpe
 from hyperopt.mongoexp import MongoTrials
 
+from cf_genie.utils.read_write_files import write_hyper_parameters
+
 
 @dataclass
 class HyperoptRun:
@@ -55,8 +57,12 @@ def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None
         search_space,
         **kwargs)
 
-    return HyperoptRun(
+    run = HyperoptRun(
         best_params, space_eval(
             search_space, best_params), trials, pickle.loads(
             trials.trial_attachments(
                 trials.best_trial)['model']))
+
+    if mongo_exp_key:
+        write_hyper_parameters(mongo_exp_key, run.best_params_evaluated_space)
+    return run

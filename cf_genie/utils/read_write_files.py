@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -9,11 +10,13 @@ DATASET_PATH = os.path.join(PROJECT_DIR, 'dataset')
 PLOTS_PATH = os.path.join(PROJECT_DIR, 'plots')
 TEMP_PATH = os.path.join(PROJECT_DIR, 'temp')
 MODELS_PATH = os.path.join(PROJECT_DIR, 'models')
+HYPER_PARAMETERS_PATH = os.path.join(PROJECT_DIR, 'hyper-parameters')
 
 Path(DATASET_PATH).mkdir(parents=True, exist_ok=True)
 Path(PLOTS_PATH).mkdir(parents=True, exist_ok=True)
 Path(TEMP_PATH).mkdir(parents=True, exist_ok=True)
 Path(MODELS_PATH).mkdir(parents=True, exist_ok=True)
+Path(HYPER_PARAMETERS_PATH).mkdir(parents=True, exist_ok=True)
 
 
 def _absolute_file_path(DIR_NAME):
@@ -68,3 +71,9 @@ def write_plot(file_name, plt):
 
 def get_model_path(model_name):
     return os.path.join(MODELS_PATH, model_name)
+
+
+def write_hyper_parameters(model_name, hyper_parameters):
+    file_name = os.path.join(HYPER_PARAMETERS_PATH, model_name + '.json')
+    with open(file_name, 'w') as f:
+        json.dump(hyper_parameters, f)

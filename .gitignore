@@ -169,3 +169,4 @@ temp/
 mongo-data/
 logfile.txt
 models/
+hyper-parameters/
