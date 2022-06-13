@@ -26,9 +26,6 @@ def main():
 
     with Timer('Hyperopt search for best parameters for Doc2Vec', log=log):
         embedder = Doc2VecEmbedder(df['preprocessed_statement'].to_numpy())
-        hyperopt_info = embedder.hyperopt_info
-
-    log.info('Best parameters found %s', hyperopt_info.best_params_evaluated_space)
 
     log.info('Best trial model: %s', embedder.model)
 

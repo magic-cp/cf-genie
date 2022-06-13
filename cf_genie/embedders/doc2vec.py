@@ -70,10 +70,23 @@ class Doc2VecEmbedder(BaseEmbedder):
 
         tagged_docs = self._tagged_docs()
 
-        hyperopt_info = utils.run_hyperopt(objective(tagged_docs), SEARCH_SPACE, mongo_exp_key=self.embedder_name)
+        model_path = utils.get_model_path('doc2vec.bin')
+        try:
+            model = Doc2Vec.load(model_path)
+        except BaseException:
+            log.info('Model not stored. Building Doc2Vec model from scratch using hyper-parameterization')
+            with Timer(f'Doc2Vec hyper-parameterization', log=log):
+                hyperopt_info = utils.run_hyperopt(
+                    objective(tagged_docs),
+                    SEARCH_SPACE,
+                    mongo_exp_key=self.embedder_name,
+                    fmin_kwrgs={
+                        'max_evals': 40})
 
-        self.model: Doc2Vec = hyperopt_info.best_model
-        self.hyperopt_info = hyperopt_info
+            model: Doc2Vec = hyperopt_info.best_model
+            model.save(model_path)
+
+        self.model: Doc2Vec = model
 
     def _tagged_docs(self) -> List[str]:
         return [TaggedDocument(words=doc, tags=[i]) for i, doc in enumerate(self.docs_to_train_embedder)]
