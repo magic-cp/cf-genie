@@ -168,5 +168,5 @@ temp/
 .vscode/launch.json
 mongo-data/
 logfile.txt
-models/
+/models/
 hyper-parameters/
