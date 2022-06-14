@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(
@@ -39,27 +40,39 @@ def _absolute_file_path(DIR_NAME):
 
 
 @_absolute_file_path(DATASET_PATH)
-def _read_dataset(file_name: str) -> pd.DataFrame:
+def _read_dataset_from_csv(file_name: str) -> pd.DataFrame:
     return pd.read_csv(file_name)
 
 
 @_absolute_file_path(DATASET_PATH)
-def _write_dataset(file_name: str, dataframe: pd.DataFrame):
+def _write_dataset_to_csv(file_name: str, dataframe: pd.DataFrame):
     dataframe.to_csv(file_name, index=False)
 
 
 def read_raw_dataset() -> pd.DataFrame:
-    return _read_dataset('raw_cf_problems.csv')
+    return _read_dataset_from_csv('raw_cf_problems.csv')
 
 
 def read_cleaned_dataset() -> pd.DataFrame:
-    df = _read_dataset('cleaned_cf_problems.csv')
+    df = _read_dataset_from_csv('cleaned_cf_problems.csv')
     df['preprocessed_statement'] = df['preprocessed_statement'].apply(lambda x: x.split(' '))
     return df
 
 
+@_absolute_file_path(DATASET_PATH)
+def read_numpy_array(file_name: str) -> np.ndarray:
+    if not file_name.endswith('npy'):
+        file_name += '.npy'
+    return np.load(file_name)
+
+
+@_absolute_file_path(DATASET_PATH)
+def write_numpy_array(file_name: str, n: np.ndarray) -> None:
+    return np.save(file_name, n)
+
+
 def write_cleaned_dataframe_to_csv(dataframe: pd.DataFrame):
-    _write_dataset('cleaned_cf_problems.csv', dataframe)
+    _write_dataset_to_csv('cleaned_cf_problems.csv', dataframe)
 
 
 @_absolute_file_path(PLOTS_PATH)

@@ -1,6 +1,9 @@
 from typing import Callable, List
 
+import numpy as np
 import pandas as pd
+
+import cf_genie.utils as utils
 
 
 class BaseEmbedder:
@@ -30,3 +33,11 @@ class BaseEmbedder:
 
     def embed(self, docs: List[str]) -> List[float]:
         raise NotImplementedError("This is not implemented yet")
+
+    @classmethod
+    def read_embedded_words(cls) -> np.ndarray:
+        return utils.read_numpy_array(cls.__name__)
+
+    @classmethod
+    def write_embedded_words(cls, n) -> None:
+        return utils.write_numpy_array(cls.__name__, n)
