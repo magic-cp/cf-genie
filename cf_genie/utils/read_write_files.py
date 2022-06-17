@@ -98,7 +98,7 @@ def get_model_path(model_name):
 def write_hyper_parameters(model_name, hyper_parameters):
     file_name = os.path.join(HYPER_PARAMETERS_PATH, model_name + '.json')
     with open(file_name, 'w') as f:
-        json.dump(hyper_parameters, f)
+        json.dump(hyper_parameters, f, indent=2)
 
 
 @_absolute_file_path(MODELS_PATH)

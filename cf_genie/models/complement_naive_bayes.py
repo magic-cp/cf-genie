@@ -27,10 +27,9 @@ SEARCH_SPACE = {
 
 def objective(docs, labels, model_name):
     def wrapped(params):
-        log.info('Training MNB with params: %s', params)
         model = ComplementNB(**params)
 
-        with Timer(f'Training {model_name} model', log=log):
+        with Timer(f'Training {model_name} model with params {params}', log=log):
             model.fit(docs, labels)
 
         return {
@@ -49,7 +48,7 @@ class ComplementNaiveBayes(BaseSupervisedModel):
         try:
             model: ComplementNB = utils.read_model_from_file(model_path)
         except BaseException:
-            log.info('Model not stored. Building MNB model from scratch using hyper-parameterization')
+            log.info('Model not stored. Building CNB model from scratch using hyper-parameterization')
             with Timer(f'{self.model_name} hyper-parameterization', log=log):
                 hyperopt_info = utils.run_hyperopt(
                     objective(
@@ -71,3 +70,6 @@ class ComplementNaiveBayes(BaseSupervisedModel):
 
     def training_score(self) -> float:
         return self.model.score(self._docs_to_train_models, self._labels)
+
+    def test_score(self, X, y) -> float:
+        return self.model.score(X, y)

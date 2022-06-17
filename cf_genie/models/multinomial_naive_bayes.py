@@ -50,7 +50,7 @@ class MultinomialNaiveBayes(BaseSupervisedModel):
         try:
             model: MultinomialNB = utils.read_model_from_file(model_path)
         except BaseException:
-            log.info('Model not stored. Building MNB model from scratch using hyper-parameterization')
+            log.info(f'Model not stored. Building {self.model_name} from scratch using hyper-parameterization')
             with Timer(f'{self.model_name} hyper-parameterization', log=log):
                 hyperopt_info = utils.run_hyperopt(
                     objective(
@@ -71,3 +71,6 @@ class MultinomialNaiveBayes(BaseSupervisedModel):
 
     def training_score(self) -> float:
         return self.model.score(self._docs_to_train_models, self._labels)
+
+    def test_score(self, docs, labels) -> float:
+        return self.model.score(docs, labels)
