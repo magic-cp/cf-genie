@@ -1,7 +1,7 @@
 import json
 import os
-from pathlib import Path
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -100,14 +100,16 @@ def write_hyper_parameters(model_name, hyper_parameters):
     with open(file_name, 'w') as f:
         json.dump(hyper_parameters, f)
 
+
 @_absolute_file_path(MODELS_PATH)
-def write_model_to_file(file_name, model, write_fun = pickle.dump):
+def write_model_to_file(file_name, model, write_fun=pickle.dump):
     log.debug(f'Storing model to file: {file_name}')
     with open(file_name, 'wb') as f:
         write_fun(model, f)
 
+
 @_absolute_file_path(MODELS_PATH)
-def read_model_from_file(file_name, read_fun = pickle.load):
+def read_model_from_file(file_name, read_fun=pickle.load):
     log.debug(f'Reading model from file: {file_name}')
     with open(file_name, 'rb') as f:
         return read_fun(f)

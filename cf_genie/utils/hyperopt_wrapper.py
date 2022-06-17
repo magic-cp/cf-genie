@@ -51,7 +51,6 @@ def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None
         'max_evals': 100,
         **fmin_kwrgs
     }
-    print(kwargs)
     best_params = fmin(
         model_fn,
         search_space,

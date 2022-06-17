@@ -3,9 +3,8 @@ from typing import Callable, List
 import numpy as np
 import pandas as pd
 
-import cf_genie.utils as utils
 import cf_genie.logger as logger
-
+import cf_genie.utils as utils
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -13,17 +12,18 @@ logger.setup_applevel_logger(
 
 log = logger.get_logger(__name__)
 
+
 class BaseEmbedder:
     """
     Represents and holds the information for a word embedder.
 
     Sub-classes should implement the `embed` method
     """
+
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         """
         Initialize the embedder.
 
-        :embeder_name: The name of the embedder.
         :docs_to_train_embedder: paragraphs to train the embedder on.
         """
         self._embedder_name = type(self).__name__  # hat trick to get class name. Works for subclasses too
@@ -46,7 +46,6 @@ class BaseEmbedder:
             return utils.read_numpy_array(cls.__name__)
         except FileNotFoundError:
             raise ValueError(f'{cls.__name__} has not been trained yet. Run the embed_datasets task to fix this error')
-
 
     @classmethod
     def write_embedded_words(cls, n) -> None:
