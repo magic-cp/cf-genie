@@ -16,5 +16,5 @@ from cf_genie.utils.read_write_files import (TEMP_PATH, get_model_path,
                                              read_numpy_array,
                                              read_raw_dataset,
                                              write_cleaned_dataframe_to_csv,
-                                             write_numpy_array, write_plot)
+                                             write_numpy_array, write_plot, write_model_to_file, read_model_from_file)
 from cf_genie.utils.timer import Timer

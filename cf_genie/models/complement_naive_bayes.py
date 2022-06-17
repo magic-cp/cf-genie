@@ -45,11 +45,9 @@ def objective(docs, labels, model_name):
 
 class ComplementNaiveBayes(BaseSupervisedModel):
     def train(self):
-        model_path = utils.get_model_path(f'{self.model_name}.bin')
+        model_path = utils.get_model_path(f'{self.model_name}.pkl')
         try:
-            with open(model_path, 'rb') as f:
-                model: ComplementNB = pickle.load(f)
-                log.info(f'{self.model_name} model loaded from disk')
+            model: ComplementNB = utils.read_model_from_file(model_path)
         except BaseException:
             log.info('Model not stored. Building MNB model from scratch using hyper-parameterization')
             with Timer(f'{self.model_name} hyper-parameterization', log=log):
@@ -63,6 +61,7 @@ class ComplementNaiveBayes(BaseSupervisedModel):
                     fmin_kwrgs={
                         'max_evals': 40})
                 model: ComplementNB = hyperopt_info.best_model
+                utils.write_model_to_file(model_path, model)
 
         self.model = model
         pass

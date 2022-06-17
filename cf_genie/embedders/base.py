@@ -4,7 +4,14 @@ import numpy as np
 import pandas as pd
 
 import cf_genie.utils as utils
+import cf_genie.logger as logger
 
+
+logger.setup_applevel_logger(
+    is_debug=False, file_name=__file__, simple_logs=True)
+
+
+log = logger.get_logger(__name__)
 
 class BaseEmbedder:
     """
@@ -12,7 +19,6 @@ class BaseEmbedder:
 
     Sub-classes should implement the `embed` method
     """
-
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         """
         Initialize the embedder.
@@ -36,8 +42,12 @@ class BaseEmbedder:
 
     @classmethod
     def read_embedded_words(cls) -> np.ndarray:
-        return utils.read_numpy_array(cls.__name__)
+        try:
+            return utils.read_numpy_array(cls.__name__)
+        except FileNotFoundError:
+            raise ValueError(f'{cls.__name__} has not been trained yet. Run the embed_datasets task to fix this error')
+
 
     @classmethod
     def write_embedded_words(cls, n) -> None:
-        return utils.write_numpy_array(cls.__name__, n)
+        utils.write_numpy_array(cls.__name__, n)

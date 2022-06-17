@@ -15,7 +15,7 @@ def main():
         with utils.Timer(f'Embedding with {embedder.embedder_name}'):
             words = np.array(df['preprocessed_statement'].progress_apply(lambda x: embedder.embed(x)).tolist())
         with utils.Timer(f'Writing words of {embedder.embedder_name} to file'):
-            embedder.write_embedded_words(words)
+            embedder_class.write_embedded_words(words)
     pass
 
 
