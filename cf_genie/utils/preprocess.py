@@ -42,92 +42,15 @@ MATHEMATICAL_OPERATORS = r'[+-]'
 MATHEMATICAL_EXPRESSION_REGEX = rf'^({NUMBERS_AND_VARIABLES})({MATHEMATICAL_OPERATORS}{NUMBERS_AND_VARIABLES})*$'
 
 # TODO: Review these. It might be useful to re-map these to something else.
+# TODO: This is not currently used, but it might be useful in the future.
 LATEX_TOKENS = {
-    # r'\left',
-    # r'\right',
-    # r'\wedge',
-    # r'\color',
-    # r'\displaystyle',
-    # r'\gcd\limits_',
-    # r'\dots',
-    # r'\dot',
-    # r'\le',
-    # r'\lt',
-    # r'\mathit',
-    # r'\times',
-    # r'\ldot',
-    # r'\gcd',
-    # r'\bmod',
-    # r'\ge',
-    # r'\text',
-    # r'\leq',
-    # r'\ldot',
-    # r'\ldots',
-    # r'\texttt',
-    # r'\begin',
-    # r'\subseteq',
-    # r'\sqrt',
-    # r'\sum\limits_',
-    # r'\in',
-    # r'\to',
-    # r'\neq',
-    # r'\frac',
-    # r'\operatorname',
-    # r'\sum_',
-    # r'\sum',
-    # r'\limits',
-    # r'\oplus',
-    # r'\max\limits_',
-    # r'\alpha',
-    # r'\ne',
-    # r'\geq',
-    # r'\gt',
-    # r'\sigma',
-    # r'\sigma^2',
-    # r'\mathrm',
-    # r'\min',
-    # r'\min_',
-    # r'\max',
-    # r'\max\\',
-    # r'\limits_',
-    # r'\mathsf',
-    # r'\underline',
-    # r'\underbrace',
-    # r'\lceil',
-    # r'\rceil',
-    # r'\sigma',
-    # r'\sigma^',
-    # r'\sigma^2',
-    # r'\lfloor\frac',
-    # r'\rfloor',
-    # r'\lceil\frac',
-    # r'\lfloor',
-    # r'\rfloor',
-    # r'\mu',
-    r'\sum_',
-    r'\subseteq',
-    r'\in',
-    r'\max',
-    r'\ldot',
-    r'\ldots',
-    r'\dot',
-    r'\dots',
-    r'\geq',
-    r'\texttt',
-    r'\bmod',
-    r'\left',
-    r'\right',
-    r'\gcd',
-    r'\cdots',
-    r'\cdot',
-    r'\land',
-    r'\cdots\land',
-    r'\oplus',
-    r'\operatorname',
-    r'\begin',
-    r'\text',
+    r'\cdot', r'\cdots', r'\equiv', r'\quad', r'\textrm', r'\sum_', r'\in', r'\subseteq',
+    r'\max', r'\max_', r'\prod_', r'\ldot', r'\ldots', r'\geq', r'\dot', r'\dots', r'\texttt', r'\bmod', r'\left', r'\right',
+    r'\large', r'\operatorname', r'\substack', r'\le', r'\gcd', r'\min\limits_', r'\min_', r'\min',
+    r'\sum\limits_', r'\to', r'\langle', r'\rangle', r'\oplus', r'\frac', r'\leq', r'\underline',
+    r'\land', r'\cdots\land', r'\sigma_d', r'\smash', r'\displaystyle\max_', r'\log', r'\delta^',
+    r'\vec', r'\mathbb', r'\neq', r'\varnothing', r'\left\\', r'\text\\'
 }
-# LATEX_TOKENS = set()
 
 
 def handle_contractions(tokens: List[str]):
@@ -153,6 +76,7 @@ def handle_contractions(tokens: List[str]):
 
 def remove_punctuation(text: List[str]) -> List[str]:
     def has_only_punctuation(x): return all(c in string.punctuation for c in x)
+
     def remove_punctuation(x: str):
         # handling latex tokens
         if x[0] == '\\':
@@ -177,28 +101,56 @@ def remove_mathematical_expressions(tokens: List[str]) -> List[str]:
 
 
 def remove_simple_latex_tokens(tokens: List[str]) -> List[str]:
-    return [token for token in tokens if token not in LATEX_TOKENS]
+    # The following code is sort of naive. It simply removes all tokens that start with a backslash.
+    return [token for token in tokens if not token.startswith('\\')]
 
-def remove_latex_blocks(text: str) -> str:
+
+def remove_latex_begin_end_blocks(text: str) -> str:
+    ret = []
+    i = 0
+    l = len(text)
+    beg = '\\begin'
+    end = '\\end'
+    while i < l - 6:
+        if text[i:i + 6] == beg:
+            num_begins = 1
+            i += 6
+            while num_begins and i < l - 4:
+                if text[i:i + 6] == beg:
+                    num_begins += 1
+                    i += 6
+                elif text[i:i + 4] == end:
+                    num_begins -= 1
+                    i += 4
+                else:
+                    i += 1
+        else:
+            ret.append(text[i])
+            i += 1
+    while i < l:
+        ret.append(text[i])
+        i += 1
+    return ''.join(ret)
+
+
+def remove_latex_dollar_blocks(text: str) -> str:
     ret = []
     i = 0
     l = len(text)
     while i < l - 3:
-        if text[i:i+3] == '$$$':
+        if text[i:i + 3] == '$$$':
             i += 3
-            while i < l - 3 and text[i:i+3] != '$$$':
+            while i < l - 3 and text[i:i + 3] != '$$$':
                 i += 1
             i += 3
         else:
             ret.append(text[i])
             i += 1
-    if i < l:
+    while i < l:
         ret.append(text[i])
-    if i + 1 < l:
-        ret.append(text[i + 1])
-    if i + 2 < l:
-        ret.append(text[i + 2])
+        i += 1
     return ''.join(ret)
+
 
 def preprocess_cf_statement(text: str) -> List[str]:
     log.debug('Text input: %s', text)
@@ -207,8 +159,12 @@ def preprocess_cf_statement(text: str) -> List[str]:
     text = text.lower()
     log.debug('Text after lowercase: %s', text)
 
-    # Latex block removal
-    text = remove_latex_blocks(text)
+    # Latex \begin and \end removal
+    text = remove_latex_begin_end_blocks(text)
+    log.debug('Text after latext begin end removal: %s', text)
+
+    # Latex $$$ block removal
+    text = remove_latex_dollar_blocks(text)
     log.debug('Text after latext block removal: %s', text)
 
     # Word tokenization

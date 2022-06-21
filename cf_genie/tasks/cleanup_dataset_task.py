@@ -2,16 +2,12 @@
 Script to cleanup the dataset. Performs preprocessing over CF statements, and also remapping of tags to "tag groups"
 """
 from itertools import groupby
-from pprint import PrettyPrinter
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
-
-
-pprint = PrettyPrinter().pprint
 
 
 log = logger.get_logger(__name__)
