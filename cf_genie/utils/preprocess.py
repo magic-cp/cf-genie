@@ -41,37 +41,93 @@ NUMBERS_AND_VARIABLES = r'([0-9]+|' + VARIABLE_REGEX + ')'
 MATHEMATICAL_OPERATORS = r'[+-]'
 MATHEMATICAL_EXPRESSION_REGEX = rf'^({NUMBERS_AND_VARIABLES})({MATHEMATICAL_OPERATORS}{NUMBERS_AND_VARIABLES})*$'
 
+# TODO: Review these. It might be useful to re-map these to something else.
 LATEX_TOKENS = {
-    r'\dots',
-    r'\dot',
-    r'\le',
-    r'\cdot',
-    r'\times',
-    r'\ldot',
-    r'\gcd',
-    r'\bmod',
-    r'\ge',
-    r'\text',
-    r'\leq',
+    # r'\left',
+    # r'\right',
+    # r'\wedge',
+    # r'\color',
+    # r'\displaystyle',
+    # r'\gcd\limits_',
+    # r'\dots',
+    # r'\dot',
+    # r'\le',
+    # r'\lt',
+    # r'\mathit',
+    # r'\times',
+    # r'\ldot',
+    # r'\gcd',
+    # r'\bmod',
+    # r'\ge',
+    # r'\text',
+    # r'\leq',
+    # r'\ldot',
+    # r'\ldots',
+    # r'\texttt',
+    # r'\begin',
+    # r'\subseteq',
+    # r'\sqrt',
+    # r'\sum\limits_',
+    # r'\in',
+    # r'\to',
+    # r'\neq',
+    # r'\frac',
+    # r'\operatorname',
+    # r'\sum_',
+    # r'\sum',
+    # r'\limits',
+    # r'\oplus',
+    # r'\max\limits_',
+    # r'\alpha',
+    # r'\ne',
+    # r'\geq',
+    # r'\gt',
+    # r'\sigma',
+    # r'\sigma^2',
+    # r'\mathrm',
+    # r'\min',
+    # r'\min_',
+    # r'\max',
+    # r'\max\\',
+    # r'\limits_',
+    # r'\mathsf',
+    # r'\underline',
+    # r'\underbrace',
+    # r'\lceil',
+    # r'\rceil',
+    # r'\sigma',
+    # r'\sigma^',
+    # r'\sigma^2',
+    # r'\lfloor\frac',
+    # r'\rfloor',
+    # r'\lceil\frac',
+    # r'\lfloor',
+    # r'\rfloor',
+    # r'\mu',
+    r'\sum_',
+    r'\subseteq',
+    r'\in',
+    r'\max',
     r'\ldot',
     r'\ldots',
-    r'\texttt',
-    r'\begin',
-    r'\sum\limits_',
-    r'\in',
-    r'\to',
-    r'\neq',
-    r'\frac',
-    r'\operatornam',
-    r'\sum_',
-    r'\oplus',
-    r'\max\limits_',
-    r'\alpha',
-    r'\ne',
+    r'\dot',
+    r'\dots',
     r'\geq',
-    r'\gt',
-    r'\sigma',
+    r'\texttt',
+    r'\bmod',
+    r'\left',
+    r'\right',
+    r'\gcd',
+    r'\cdots',
+    r'\cdot',
+    r'\land',
+    r'\cdots\land',
+    r'\oplus',
+    r'\operatorname',
+    r'\begin',
+    r'\text',
 }
+# LATEX_TOKENS = set()
 
 
 def handle_contractions(tokens: List[str]):
@@ -97,7 +153,12 @@ def handle_contractions(tokens: List[str]):
 
 def remove_punctuation(text: List[str]) -> List[str]:
     def has_only_punctuation(x): return all(c in string.punctuation for c in x)
-    return [word for word in text if not has_only_punctuation(word)]
+    def remove_punctuation(x: str):
+        # handling latex tokens
+        if x[0] == '\\':
+            return x
+        return x.translate(str.maketrans('', '', string.punctuation))
+    return [remove_punctuation(word) for word in text if not has_only_punctuation(word)]
 
 
 def remove_stopwords(text: List[str]) -> List[str]:
@@ -118,6 +179,26 @@ def remove_mathematical_expressions(tokens: List[str]) -> List[str]:
 def remove_simple_latex_tokens(tokens: List[str]) -> List[str]:
     return [token for token in tokens if token not in LATEX_TOKENS]
 
+def remove_latex_blocks(text: str) -> str:
+    ret = []
+    i = 0
+    l = len(text)
+    while i < l - 3:
+        if text[i:i+3] == '$$$':
+            i += 3
+            while i < l - 3 and text[i:i+3] != '$$$':
+                i += 1
+            i += 3
+        else:
+            ret.append(text[i])
+            i += 1
+    if i < l:
+        ret.append(text[i])
+    if i + 1 < l:
+        ret.append(text[i + 1])
+    if i + 2 < l:
+        ret.append(text[i + 2])
+    return ''.join(ret)
 
 def preprocess_cf_statement(text: str) -> List[str]:
     log.debug('Text input: %s', text)
@@ -125,6 +206,10 @@ def preprocess_cf_statement(text: str) -> List[str]:
     # Lowercase the entire text
     text = text.lower()
     log.debug('Text after lowercase: %s', text)
+
+    # Latex block removal
+    text = remove_latex_blocks(text)
+    log.debug('Text after latext block removal: %s', text)
 
     # Word tokenization
     words = word_tokenize(text)
@@ -153,11 +238,6 @@ def preprocess_cf_statement(text: str) -> List[str]:
 
     # Stemmization
     words = stem_words(words)
-    log.debug('Tokens after stemming: %s', words)
+    log.info('Tokens after stemming: %s', words)
 
     return words
-
-
-def preprocess_and_store(dataset: List[str]):
-    for i in range(0, len(dataset)):
-        dataset[i] = preprocess_cf_statement(dataset[i])
