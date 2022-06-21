@@ -5,9 +5,11 @@ Multinomial naive bayes (MNB) is a classifier that generalises Naive Bayes Class
 allow us to perform multi-class classifications
 """
 import pickle
+import tempfile
 from typing import List
 
 from hyperopt import STATUS_OK, hp
+import numpy as np
 from sklearn.naive_bayes import MultinomialNB
 
 import cf_genie.logger as logger
@@ -26,10 +28,11 @@ SEARCH_SPACE = {
 }
 
 
-def objective(docs, labels, model_name):
+def objective(f, labels, model_name):
     def wrapped(params):
         log.info('Training MNB with params: %s', params)
         model = MultinomialNB(**params)
+        docs = np.load(f)
 
         with Timer(f'Training {model_name} model', log=log):
             model.fit(docs, labels)
@@ -51,18 +54,20 @@ class MultinomialNaiveBayes(BaseSupervisedModel):
             model: MultinomialNB = utils.read_model_from_file(model_path)
         except BaseException:
             log.info(f'Model not stored. Building {self.model_name} from scratch using hyper-parameterization')
-            with Timer(f'{self.model_name} hyper-parameterization', log=log):
-                hyperopt_info = utils.run_hyperopt(
-                    objective(
-                        self._docs_to_train_models,
-                        self._labels,
-                        self.model_name),
-                    SEARCH_SPACE,
-                    mongo_exp_key=self._model_name,
-                    fmin_kwrgs={
-                        'max_evals': 40})
-                model: MultinomialNB = hyperopt_info.best_model
-                utils.write_model_to_file(model_path, model)
+            with tempfile.NamedTemporaryFile() as tempf:
+                np.save(tempf, self._docs_to_train_models)
+                with Timer(f'{self.model_name} hyper-parameterization', log=log):
+                    hyperopt_info = utils.run_hyperopt(
+                        objective(
+                            tempf.name,
+                            self._labels,
+                            self.model_name),
+                        SEARCH_SPACE,
+                        mongo_exp_key=self._model_name,
+                        fmin_kwrgs={
+                            'max_evals': 40})
+                    model: MultinomialNB = hyperopt_info.best_model
+                    utils.write_model_to_file(model_path, model)
 
         self.model = model
 
