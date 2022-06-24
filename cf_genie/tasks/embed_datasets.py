@@ -23,7 +23,6 @@ def main():
             words = np.array(df['preprocessed_statement'].progress_apply(lambda x: embedder.embed(x)).tolist())
         with utils.Timer(f'Writing words of {embedder.embedder_name} to file', log=log):
             embedder_class.write_embedded_words(words)
-    pass
 
 
 if __name__ == '__main__':

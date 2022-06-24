@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -6,14 +6,8 @@ import pandas as pd
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 
-logger.setup_applevel_logger(
-    is_debug=False, file_name=__file__, simple_logs=True)
 
-
-log = logger.get_logger(__name__)
-
-
-class BaseEmbedder:
+class BaseEmbedder(logger.Loggable):
     """
     Represents and holds the information for a word embedder.
 
@@ -26,6 +20,7 @@ class BaseEmbedder:
 
         :docs_to_train_embedder: paragraphs to train the embedder on.
         """
+        super().__init__()
         self._embedder_name = type(self).__name__  # hat trick to get class name. Works for subclasses too
         self._docs_to_train_embedder = docs_to_train_embedder
 

@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from logging import Logger
 from pathlib import Path
 from pprint import PrettyPrinter
 
@@ -45,3 +46,17 @@ def get_logger(module_name):
 
 def get_prettyprinter():
     return PrettyPrinter(indent=4)
+
+
+class Loggable:
+    def __init__(self) -> None:
+        klass = self.__class__
+        module = klass.__module__
+
+        # reference https://stackoverflow.com/questions/2020014/get-fully-qualified-class-name-of-an-object-in-python
+        if module == 'builtins':
+            log_name = klass.__qualname__  # avoid outputs like 'builtins.str'
+        else:
+            log_name = module + '.' + klass.__qualname__
+
+        self.log = get_logger(log_name)

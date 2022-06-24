@@ -5,16 +5,9 @@ from typing import List, Tuple
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-import cf_genie.logger as logger
 import cf_genie.utils as utils
 from cf_genie.embedders.base import BaseEmbedder
 from cf_genie.utils import Timer
-
-logger.setup_applevel_logger(
-    is_debug=False, file_name=__file__, simple_logs=True)
-
-
-log = logger.get_logger(__name__)
 
 
 def get_tfidf_vectorizer(ngram_range: Tuple[int, int], docs_to_train_embedder: List[List[str]]) -> TfidfVectorizer:
@@ -31,8 +24,8 @@ class BaseTfidfEmbedder(BaseEmbedder):
         try:
             self.vectorizer: TfidfVectorizer = utils.read_model_from_file(embedder_path)
         except FileNotFoundError:
-            log.debug('Model not stored. Building TFIDF model from scratch')
-            with Timer(f'Building tf-idf for {ngram}-grams', log=log):
+            self.log.debug('Model not stored. Building TFIDF model from scratch')
+            with Timer(f'Building tf-idf for {ngram}-grams', log=self.log):
                 self.vectorizer: TfidfVectorizer = get_tfidf_vectorizer((ngram, ngram), docs_to_train_embedder)
 
     def embed(self, doc: List[str]):

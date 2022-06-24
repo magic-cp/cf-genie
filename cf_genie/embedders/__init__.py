@@ -1,7 +1,7 @@
 """
 Exports all embedders relevant to our proyect
 """
-from typing import Callable, List, Type
+from typing import List, Type
 
 from cf_genie.embedders.base import BaseEmbedder
 from cf_genie.embedders.doc2vec import Doc2VecEmbedder

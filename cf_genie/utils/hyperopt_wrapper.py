@@ -4,11 +4,15 @@ Simple wrapper over MongoDB to store and retrieve trials.
 
 import pickle
 from dataclasses import dataclass
+from typing import Optional
 
 from hyperopt import Trials, fmin, space_eval, tpe
 from hyperopt.mongoexp import MongoTrials
 
+import cf_genie.logger as logger
 from cf_genie.utils.read_write_files import write_hyper_parameters
+
+log = logger.get_logger(__name__)
 
 
 @dataclass
@@ -16,10 +20,10 @@ class HyperoptRun:
     best_params_hp: dict
     best_params_evaluated_space: dict
     trials: Trials
-    best_model: object
+    best_model: Optional[object] = None
 
 
-def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None, fmin_kwrgs={}):
+def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None, fmin_kwrgs={}) -> HyperoptRun:
     """Tiny wrapper over Hyperopt to run a search for the best parameters.
 
     Args:
@@ -56,11 +60,11 @@ def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None
         search_space,
         **kwargs)
 
-    run = HyperoptRun(
-        best_params, space_eval(
-            search_space, best_params), trials, pickle.loads(
-            trials.trial_attachments(
-                trials.best_trial)['model']))
+    run = HyperoptRun(best_params, space_eval(search_space, best_params), trials)
+    try:
+        run.best_model = pickle.loads(trials.trial_attachments(trials.best_trial)['model'])
+    except Exception:
+        log.warning('Could not load best model from MongoDB', exc_info=True)
 
     if mongo_exp_key:
         write_hyper_parameters(mongo_exp_key, run.best_params_evaluated_space)

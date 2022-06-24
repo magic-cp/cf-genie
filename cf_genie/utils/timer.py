@@ -3,12 +3,13 @@ import time
 import cf_genie.logger as logger
 
 
-class Timer:
+class Timer(logger.Loggable):
     """Context handler to measure time of a function"""
 
-    def __init__(self, action_name, log=logger.get_logger(__name__)):
+    def __init__(self, action_name, log=None):
+        super().__init__()
         self.action_name = action_name
-        self.log = log
+        self.log = log or self.log
         self.log.info("Starting: %s", self.action_name)
 
         self.start_time = time.time()

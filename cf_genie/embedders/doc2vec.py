@@ -1,6 +1,7 @@
 import collections
 import pickle
-from typing import Callable, List
+from functools import partial
+from typing import List
 
 import pandas as pd
 from gensim.models import Doc2Vec
@@ -13,12 +14,6 @@ import cf_genie.utils as utils
 from cf_genie.embedders.base import BaseEmbedder
 from cf_genie.utils import Timer
 
-logger.setup_applevel_logger(
-    is_debug=False, file_name=__file__, simple_logs=True)
-
-
-log = logger.get_logger(__name__)
-
 SEARCH_SPACE = {
     'vector_size': hp.choice('vector_size', [50, 100, 200, 300]),
     'dm': hp.choice('dm', [0, 1]),
@@ -27,41 +22,38 @@ SEARCH_SPACE = {
 }
 
 
-def objective(tagged_docs: List[TaggedDocument]):
-    def fn(params):
-        log.info('Building word2vec model with params: %s', params)
-        model = Doc2Vec(**params, negative=5, min_count=2, sample=0, workers=utils.CORES, epochs=40)
+def objective(tagged_docs: List[TaggedDocument], log: logger.Logger, params):
+    log.info('Building word2vec model with params: %s', params)
+    model = Doc2Vec(**params, negative=5, min_count=2, sample=0, workers=utils.CORES, epochs=40)
 
-        model.build_vocab(tagged_docs)
+    model.build_vocab(tagged_docs)
 
-        with Timer(f'Word2Vec training {model}', log=log):
-            model.train(tagged_docs, total_examples=model.corpus_count, epochs=model.epochs)
+    with Timer(f'Word2Vec training {model}', log=log):
+        model.train(tagged_docs, total_examples=model.corpus_count, epochs=model.epochs)
 
-        ranks = []
-        with Timer(f"Doc2Vec inferring {model}", log=log):
-            for doc_id in tqdm(range(len(tagged_docs)), desc='Doc2Vec inferring'):
-                log.debug('doc_id: %s', doc_id)
-                inferred_vector = model.infer_vector(tagged_docs[doc_id].words)
-                log.debug('Inferred vector for doc id #%s: %s', doc_id, inferred_vector)
-                sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
-                log.debug('Similarity scores for doc id #%s: %s', doc_id, sims)
-                rank = [docid for docid, sim in sims].index(doc_id)
-                ranks.append(rank)
+    ranks = []
+    with Timer(f"Doc2Vec inferring {model}", log=log):
+        for doc_id in tqdm(range(len(tagged_docs)), desc='Doc2Vec inferring'):
+            log.debug('doc_id: %s', doc_id)
+            inferred_vector = model.infer_vector(tagged_docs[doc_id].words)
+            log.debug('Inferred vector for doc id #%s: %s', doc_id, inferred_vector)
+            sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
+            log.debug('Similarity scores for doc id #%s: %s', doc_id, sims)
+            rank = [docid for docid, sim in sims].index(doc_id)
+            ranks.append(rank)
 
-        counter = collections.Counter(ranks)
+    counter = collections.Counter(ranks)
 
-        simple_score = 100 * counter.get(0) / sum(counter.values())
-        log.info('Simple score for model %s: %s', model, simple_score)
+    simple_score = 100 * counter.get(0) / sum(counter.values())
+    log.info('Simple score for model %s: %s', model, simple_score)
 
-        return {
-            'loss': -simple_score,
-            'status': STATUS_OK,
-            'attachments': {
-                'model': pickle.dumps(model),
-            }
+    return {
+        'loss': -simple_score,
+        'status': STATUS_OK,
+        'attachments': {
+            'model': pickle.dumps(model),
         }
-
-    return fn
+    }
 
 
 class Doc2VecEmbedder(BaseEmbedder):
@@ -74,15 +66,16 @@ class Doc2VecEmbedder(BaseEmbedder):
         try:
             model = Doc2Vec.load(model_path)
         except BaseException:
-            log.info('Model not stored. Building Doc2Vec model from scratch using hyper-parameterization')
-            with Timer(f'Doc2Vec hyper-parameterization', log=log):
+            self.log.info('Model not stored. Building Doc2Vec model from scratch using hyper-parameterization')
+            with Timer(f'Doc2Vec hyper-parameterization', log=self.log):
                 hyperopt_info = utils.run_hyperopt(
-                    objective(tagged_docs),
+                    partial(objective, tagged_docs, self.log),
                     SEARCH_SPACE,
                     mongo_exp_key=self.embedder_name,
                     fmin_kwrgs={
                         'max_evals': 40})
 
+            assert hyperopt_info.best_model is not None, 'Best model is None'
             model: Doc2Vec = hyperopt_info.best_model
             model.save(model_path)
 

@@ -1,15 +1,13 @@
-from typing import List, Tuple, Type
+from typing import List, Tuple
 
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-from cf_genie.embedders import EMBEDDERS, Doc2VecEmbedder
-from cf_genie.models import (SUPERVISED_MODELS, ComplementNaiveBayes,
-                             MultinomialNaiveBayes)
-from cf_genie.models.base import BaseModel, BaseSupervisedModel
+from cf_genie.embedders import EMBEDDERS
+from cf_genie.models import ComplementNaiveBayes, MultinomialNaiveBayes
+from cf_genie.models.base import BaseModel
 from cf_genie.utils.timer import Timer
 
 logger.setup_applevel_logger(
@@ -17,6 +15,7 @@ logger.setup_applevel_logger(
 
 
 log = logger.get_logger(__name__)
+
 
 def print_train_results(model: BaseModel, X_train, y_train, X_test, y_test):
     log.info('Model name %s', model.model_name)
@@ -78,7 +77,8 @@ def main():
     #     log.info('CNB training score: %s', model.training_score())
 
     log.info("Let's test now with splitting data")
-    SPLIT_PERCENTAGES: List[Tuple[str, float]] = [('ten-percent', 0.1), ('twenty-percent', 0.2), ('thirty-percent', 0.3), ('fourty-percent', 0.4), ('fifty-percent', 0.5)]
+    SPLIT_PERCENTAGES: List[Tuple[str, float]] = [
+        ('ten-percent', 0.1), ('twenty-percent', 0.2), ('thirty-percent', 0.3), ('fourty-percent', 0.4), ('fifty-percent', 0.5)]
     for embedder_class in EMBEDDERS:
         embeder_name = embedder_class.__name__
         with Timer('Reading words using {}'.format(embeder_name)):
@@ -93,10 +93,13 @@ def main():
             X_train, X_test, y_train, y_test = train_test_split(
                 words, Y, test_size=percentage, random_state=42, stratify=Y)
 
-            scaler = MinMaxScaler()
-            scaler.fit(X_train, y_train)
             # Training model with all data
-            model = MultinomialNaiveBayes(scaler.transform(X_train), y_train, version=f'training-data-{percentage_label}-imbalanced-using-{embeder_name}')
+            model = MultinomialNaiveBayes(
+                X_train,
+                y_train,
+                X_test,
+                y_test,
+                label=f'training-data-{percentage_label}-imbalanced-using-{embeder_name}')
 
             print_train_results(model, X_train, y_train, X_test, y_test)
 
@@ -108,11 +111,12 @@ def main():
             X_train, X_test, y_train, y_test = train_test_split(
                 words, Y_adhoc, test_size=percentage, random_state=42, stratify=Y_adhoc)
 
-            scaler = MinMaxScaler()
-            scaler.fit(X_train, y_train)
-
-            model = MultinomialNaiveBayes(scaler.transform(X_train), y_train, version=f'training-data-{percentage_label}-balanced-using-{embeder_name}')
-
+            model = MultinomialNaiveBayes(
+                X_train,
+                y_train,
+                X_test,
+                y_test,
+                label=f'training-data-{percentage_label}-balanced-using-{embeder_name}')
 
             print_train_results(model, X_train, y_train, X_test, y_test)
 
@@ -120,11 +124,12 @@ def main():
             X_train, X_test, y_train, y_test = train_test_split(
                 words, Y, test_size=percentage, random_state=42, stratify=Y)
 
-            scaler = MinMaxScaler()
-            scaler.fit(X_train, y_train)
-
-            model = ComplementNaiveBayes(scaler.transform(X_train), y_train, version=f'training-data-{percentage_label}-using-{embeder_name}')
-
+            model = ComplementNaiveBayes(
+                X_train,
+                y_train,
+                X_test,
+                y_test,
+                label=f'training-data-{percentage_label}-using-{embeder_name}')
 
             print_train_results(model, X_train, y_train, X_test, y_test)
 

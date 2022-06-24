@@ -8,10 +8,6 @@ import pandas as pd
 
 import cf_genie.logger as logger
 
-logger.setup_applevel_logger(
-    is_debug=False, file_name=__file__, simple_logs=True)
-
-
 log = logger.get_logger(__name__)
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(
