@@ -10,5 +10,5 @@ from cf_genie.embedders.tfidf import (TfidfEmbedderBiGram,
                                       TfidfEmbedderTriGram,
                                       TfidfEmbedderUniGram)
 
-EMBEDDERS: List[Type[BaseEmbedder]] = [Doc2VecEmbedder, FastTextEmbedder,
-                                       TfidfEmbedderUniGram, TfidfEmbedderBiGram]  # , TfidfEmbedderTriGram]
+EMBEDDERS: List[Type[BaseEmbedder]] = [Doc2VecEmbedder, FastTextEmbedder]
+                                    #    TfidfEmbedderUniGram, TfidfEmbedderBiGram]  # , TfidfEmbedderTriGram]

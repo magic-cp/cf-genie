@@ -49,7 +49,7 @@ class BaseSupervisedModel(BaseModel):
     """
 
     def __init__(self,
-                 X: List[List[float]],
+                 X_getter: Callable[[], List[List[float]]],
                  y: List[str],
                  label: str = ''):
         """
@@ -57,7 +57,7 @@ class BaseSupervisedModel(BaseModel):
 
         :docs_to_train_model: paragraphs to train the embedder on.
         """
-        self._X = X
+        self._X_getter = X_getter
         self._y = y
         super().__init__(label)
 
@@ -70,9 +70,9 @@ class BaseSupervisedModel(BaseModel):
         raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `_get_search_space`")
 
     @classmethod
-    def _objective_fn_for_hyperopt(cls, X_file, y, model_name, log: logger.Logger, params: Dict[str, Any]) -> Callable:
+    def _objective_fn_for_hyperopt(cls, X_getter: Callable[[], List[List[float]]], y, model_name, log: logger.Logger, params: Dict[str, Any]) -> Callable:
         with Timer(f'Loading X from disk', log=log):
-            X = np.load(X_file)
+            X = X_getter()
 
         model = cls.init_model_object(**params)
         log.info('model memory address: %s', hex(id(model)))
@@ -111,19 +111,16 @@ class BaseSupervisedModel(BaseModel):
             self.log.debug('Model %s found on disk', model_path)
         except FileNotFoundError:
             self.log.debug('Model not stored. Building %s model from scratch using hyper-parameterization', model_name)
-            with tempfile.NamedTemporaryFile() as tempf_X:
-                with Timer(f'Storing train and test arrays in files for model {model_name}', log=self.log):
-                    np.save(tempf_X, self._X)
 
-                with Timer(f'{model_name} hyper-parameterization', log=self.log):
-                    hyperopt_info = utils.run_hyperopt(partial(self._objective_fn_for_hyperopt, tempf_X.name, self._y, model_name, self.log),
-                        self._get_search_space(),
-                        mongo_exp_key=model_name,
-                        store_in_mongo=False,
-                        fmin_kwrgs=self.get_fmin_kwargs())
-                    model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
-                    model.fit(self._X, self._y)
-                    utils.write_model_to_file(model_path, model)
+            with Timer(f'{model_name} hyper-parameterization', log=self.log):
+                hyperopt_info = utils.run_hyperopt(partial(self._objective_fn_for_hyperopt, self._X_getter, self._y, model_name, self.log),
+                    self._get_search_space(),
+                    mongo_exp_key=model_name,
+                    store_in_mongo=False,
+                    fmin_kwrgs=self.get_fmin_kwargs())
+            model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
+            model.fit(self._X_getter(), self._y)
+            utils.write_model_to_file(model_path, model)
 
         self._model = model
 

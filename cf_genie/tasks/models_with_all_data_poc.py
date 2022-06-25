@@ -33,7 +33,7 @@ def main():
                 with Timer(f'Loading embedded words for {embedder_class.__name__}', log=log):
                     X = embedder_class.read_embedded_words()
                 with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__}', log=log):
-                    model = model_class(X, y, label='with-' + embedder_class.__name__ + '-on-imbalanced-data')
+                    model = model_class(embedder_class.read_embedded_words, y, label='with-' + embedder_class.__name__ + '-on-imbalanced-data')
                     print_train_results(model, X, y)
 
 

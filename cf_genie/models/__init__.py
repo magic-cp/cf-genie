@@ -6,6 +6,6 @@ from cf_genie.models.multinomial_naive_bayes import MultinomialNaiveBayes
 
 SUPERVISED_MODELS: List[Type[BaseSupervisedModel]] = [
     MultinomialNaiveBayes,
-    MultinomialNaiveBayes
+    ComplementNaiveBayes
 ]
 UNSUPERVISED_MODELS: List[Type[BaseUnSupervisedModel]] = []

@@ -26,14 +26,14 @@ class ComplementNaiveBayes(BaseSupervisedModel):
 
     @staticmethod
     def init_model_object(**params) -> object:
-        return Pipeline([('scaler', MinMaxScaler()), ('estimator', ComplementNB(**params))]).set_params(**params)
+        return Pipeline([('scaler', MinMaxScaler()), ('estimator', ComplementNB())]).set_params(**params)
 
     def predict(self, doc) -> List[str]:
         return self.model.predict(doc)
 
     @staticmethod
     def get_fmin_kwargs():
-        raise {
+        return {
             'max_evals': 15,
         }
 
