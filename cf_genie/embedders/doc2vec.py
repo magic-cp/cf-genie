@@ -89,3 +89,53 @@ class Doc2VecEmbedder(BaseEmbedder):
 
     def __str__(self):
         return self.model.__str__()
+
+class Doc2VecEmbedderWithSize(BaseEmbedder):
+    def __init__(self, docs_to_train_embedder: List[List[str]], size: int):
+        super().__init__(docs_to_train_embedder)
+
+        tagged_docs = self._tagged_docs()
+
+        model_path = utils.get_model_path(f'doc2vec-{size}.bin')
+        try:
+            model = Doc2Vec.load(model_path)
+        except BaseException:
+            self.log.info('Model not stored. Building Doc2Vec model from scratch')
+            with Timer(f'Doc2Vec vec size {size} training', log=self.log):
+                model = Doc2Vec(dm=0, hs=1, vector_size=size, window=4, negative=5, min_count=2, sample=0, workers=utils.CORES, epochs=40)
+
+                model.build_vocab(tagged_docs)
+
+                model.train(tagged_docs, total_examples=model.corpus_count, epochs=model.epochs)
+
+            model.save(model_path)
+
+        self.model: Doc2Vec = model
+
+    def _tagged_docs(self) -> List[str]:
+        return [TaggedDocument(words=doc, tags=[i]) for i, doc in enumerate(self.docs_to_train_embedder)]
+
+    def embed(self, doc: List[str]) -> pd.Series:
+        return self.model.infer_vector(doc)
+
+    def __str__(self):
+        return self.model.__str__()
+
+class Doc2VecEmbedder30(Doc2VecEmbedderWithSize):
+    def __init__(self, docs_to_train_embedder: List[List[str]]):
+        super().__init__(docs_to_train_embedder, 30)
+
+class Doc2VecEmbedder50(Doc2VecEmbedderWithSize):
+    def __init__(self, docs_to_train_embedder: List[List[str]]):
+        super().__init__(docs_to_train_embedder, 50)
+
+class Doc2VecEmbedder100(Doc2VecEmbedderWithSize):
+    def __init__(self, docs_to_train_embedder: List[List[str]]):
+        super().__init__(docs_to_train_embedder, 100)
+
+class Doc2VecEmbedder150(Doc2VecEmbedderWithSize):
+    def __init__(self, docs_to_train_embedder: List[List[str]]):
+        super().__init__(docs_to_train_embedder, 150)
+class Doc2VecEmbedder200(Doc2VecEmbedderWithSize):
+    def __init__(self, docs_to_train_embedder: List[List[str]]):
+        super().__init__(docs_to_train_embedder, 200)

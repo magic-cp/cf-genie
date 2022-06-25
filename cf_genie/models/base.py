@@ -43,7 +43,7 @@ class BaseSupervisedModel(BaseModel):
 
     Subclasses should implement:
 
-    - SEARCH_SPACE: A dictionary of hyper-parameters to search over.
+    - _get_search_space: A dictionary of hyper-parameters to search over.
     - init_model_object: A function that returns a model object. This function is called when the model is not stored.
     - train: A function that trains the model.
     """
@@ -69,6 +69,13 @@ class BaseSupervisedModel(BaseModel):
     def _get_search_space() -> object:
         raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `_get_search_space`")
 
+    @staticmethod
+    def get_fmin_kwargs():
+        raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `get_fmin_kwargs`")
+
+    def predict(self, X) -> Any:
+        raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `predict`")
+
     @classmethod
     def _objective_fn_for_hyperopt(cls, X_getter: Callable[[], List[List[float]]], y, model_name, log: logger.Logger, params: Dict[str, Any]) -> Callable:
         with Timer(f'Loading X from disk', log=log):
@@ -89,7 +96,7 @@ class BaseSupervisedModel(BaseModel):
                 cv=10,
                 scoring=scorers,
                 # return_train_score=True,
-                n_jobs=1)
+                n_jobs=2, verbose=2)
 
         log.info('scores: %s', scores)
         results = {
@@ -124,12 +131,6 @@ class BaseSupervisedModel(BaseModel):
 
         self._model = model
 
-    @staticmethod
-    def get_fmin_kwargs():
-        raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `get_fmin_kwargs`")
-
-    def predict(self, X) -> Any:
-        raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `predict`")
 
 
 class BaseUnSupervisedModel(BaseModel):
