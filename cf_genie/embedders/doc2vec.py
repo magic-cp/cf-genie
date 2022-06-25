@@ -90,6 +90,7 @@ class Doc2VecEmbedder(BaseEmbedder):
     def __str__(self):
         return self.model.__str__()
 
+
 class Doc2VecEmbedderWithSize(BaseEmbedder):
     def __init__(self, docs_to_train_embedder: List[List[str]], size: int):
         super().__init__(docs_to_train_embedder)
@@ -102,7 +103,16 @@ class Doc2VecEmbedderWithSize(BaseEmbedder):
         except BaseException:
             self.log.info('Model not stored. Building Doc2Vec model from scratch')
             with Timer(f'Doc2Vec vec size {size} training', log=self.log):
-                model = Doc2Vec(dm=0, hs=1, vector_size=size, window=4, negative=5, min_count=2, sample=0, workers=utils.CORES, epochs=40)
+                model = Doc2Vec(
+                    dm=0,
+                    hs=1,
+                    vector_size=size,
+                    window=4,
+                    negative=5,
+                    min_count=2,
+                    sample=0,
+                    workers=utils.CORES,
+                    epochs=40)
 
                 model.build_vocab(tagged_docs)
 
@@ -121,21 +131,27 @@ class Doc2VecEmbedderWithSize(BaseEmbedder):
     def __str__(self):
         return self.model.__str__()
 
+
 class Doc2VecEmbedder30(Doc2VecEmbedderWithSize):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 30)
+
 
 class Doc2VecEmbedder50(Doc2VecEmbedderWithSize):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 50)
 
+
 class Doc2VecEmbedder100(Doc2VecEmbedderWithSize):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 100)
 
+
 class Doc2VecEmbedder150(Doc2VecEmbedderWithSize):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 150)
+
+
 class Doc2VecEmbedder200(Doc2VecEmbedderWithSize):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 200)

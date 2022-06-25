@@ -37,4 +37,3 @@ class MultinomialNaiveBayes(BaseSupervisedModel):
         return {
             'max_evals': 15,
         }
-

@@ -31,20 +31,26 @@ class FastTextEmbedder(BaseEmbedder):
     def embed(self, docs: List[str]):
         return self.model.wv.get_sentence_vector(docs)
 
+
 class FastTextEmbedder30(FastTextEmbedder):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 30)
+
 
 class FastTextEmbedder50(FastTextEmbedder):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 50)
 
+
 class FastTextEmbedder100(FastTextEmbedder):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 100)
+
+
 class FastTextEmbedder150(FastTextEmbedder):
     def __init__(self, docs_to_train_embedder: List[List[str]]):
         super().__init__(docs_to_train_embedder, 150)
+
 
 class FastTextEmbedder200(FastTextEmbedder):
     def __init__(self, docs_to_train_embedder: List[List[str]]):

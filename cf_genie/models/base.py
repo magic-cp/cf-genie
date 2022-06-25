@@ -36,7 +36,6 @@ class BaseModel(logger.Loggable):
         raise NotImplementedError("Subclasses of BaseModel should implement `train`")
 
 
-
 class BaseSupervisedModel(BaseModel):
     """
     Represents a supervised model that can be trained and tested.
@@ -77,7 +76,14 @@ class BaseSupervisedModel(BaseModel):
         raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `predict`")
 
     @classmethod
-    def _objective_fn_for_hyperopt(cls, X_getter: Callable[[], List[List[float]]], y, model_name, log: logger.Logger, params: Dict[str, Any]) -> Callable:
+    def _objective_fn_for_hyperopt(cls,
+                                   X_getter: Callable[[],
+                                                      List[List[float]]],
+                                   y,
+                                   model_name,
+                                   log: logger.Logger,
+                                   params: Dict[str,
+                                                Any]) -> Callable:
         with Timer(f'Loading X from disk', log=log):
             X = X_getter()
 
@@ -108,7 +114,6 @@ class BaseSupervisedModel(BaseModel):
         log.debug('Results: %s', results)
         return results
 
-
     def train(self):
         model_name = self.model_name
         model_path = utils.get_model_path(f'{model_name}.pkl')
@@ -121,16 +126,15 @@ class BaseSupervisedModel(BaseModel):
 
             with Timer(f'{model_name} hyper-parameterization', log=self.log):
                 hyperopt_info = utils.run_hyperopt(partial(self._objective_fn_for_hyperopt, self._X_getter, self._y, model_name, self.log),
-                    self._get_search_space(),
-                    mongo_exp_key=model_name,
-                    # store_in_mongo=False,
-                    fmin_kwrgs=self.get_fmin_kwargs())
+                                                   self._get_search_space(),
+                                                   mongo_exp_key=model_name,
+                                                   # store_in_mongo=False,
+                                                   fmin_kwrgs=self.get_fmin_kwargs())
             model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
             model.fit(self._X_getter(), self._y)
             utils.write_model_to_file(model_path, model)
 
         self._model = model
-
 
 
 class BaseUnSupervisedModel(BaseModel):
