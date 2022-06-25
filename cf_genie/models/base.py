@@ -89,7 +89,7 @@ class BaseSupervisedModel(BaseModel):
                 cv=10,
                 scoring=scorers,
                 # return_train_score=True,
-                n_jobs=-1)
+                n_jobs=1)
 
         log.info('scores: %s', scores)
         results = {
@@ -116,7 +116,7 @@ class BaseSupervisedModel(BaseModel):
                 hyperopt_info = utils.run_hyperopt(partial(self._objective_fn_for_hyperopt, self._X_getter, self._y, model_name, self.log),
                     self._get_search_space(),
                     mongo_exp_key=model_name,
-                    store_in_mongo=False,
+                    # store_in_mongo=False,
                     fmin_kwrgs=self.get_fmin_kwargs())
             model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
             model.fit(self._X_getter(), self._y)
