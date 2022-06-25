@@ -14,18 +14,26 @@ from cf_genie.models.base import BaseSupervisedModel
 
 
 class ComplementNaiveBayes(BaseSupervisedModel):
-    @classmethod
-    def _get_search_space(cls):
+    @staticmethod
+    def _get_search_space():
         return {
-            'alpha': hp.uniform('alpha', 0.0, 1.0),
+            'estimator__alpha': hp.choice('alpha', [0.2, 0.5, 0.8, 1.0, 10, 100, 250, 500, 1000]),
         }
 
     @property
     def model(self) -> Pipeline:
         return self._model
 
-    def init_model_object(self, params) -> object:
-        return Pipeline([('scaler', MinMaxScaler()), ('estimator', ComplementNB(**params))])
+    @staticmethod
+    def init_model_object(**params) -> object:
+        return Pipeline([('scaler', MinMaxScaler()), ('estimator', ComplementNB(**params))]).set_params(**params)
 
     def predict(self, doc) -> List[str]:
         return self.model.predict(doc)
+
+    @staticmethod
+    def get_fmin_kwargs():
+        raise {
+            'max_evals': 15,
+        }
+

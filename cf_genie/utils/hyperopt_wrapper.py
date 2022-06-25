@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from hyperopt import Trials, fmin, space_eval, tpe
-from hyperopt.mongoexp import MongoTrials
+from hyperopt.mongoexp import MongoTrials, OperationFailure
 
 import cf_genie.logger as logger
 from cf_genie.utils.read_write_files import write_hyper_parameters
@@ -64,7 +64,7 @@ def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None
     try:
         run.best_model = pickle.loads(trials.trial_attachments(trials.best_trial)['model'])
     except Exception:
-        log.warning('Could not load best model from MongoDB', exc_info=True)
+        log.warn('Could not load best model from MongoDB for model %s', mongo_exp_key)
 
     if mongo_exp_key:
         write_hyper_parameters(mongo_exp_key, run.best_params_evaluated_space)

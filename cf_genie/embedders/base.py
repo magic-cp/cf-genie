@@ -21,7 +21,7 @@ class BaseEmbedder(logger.Loggable):
         :docs_to_train_embedder: paragraphs to train the embedder on.
         """
         super().__init__()
-        self._embedder_name = type(self).__name__  # hat trick to get class name. Works for subclasses too
+        self._embedder_name = self.__class__.__qualname__  # hat trick to get class name. Works for subclasses too
         self._docs_to_train_embedder = docs_to_train_embedder
 
     @property

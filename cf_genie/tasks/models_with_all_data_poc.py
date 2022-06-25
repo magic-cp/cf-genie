@@ -1,137 +1,40 @@
-from typing import List, Tuple
 
 import numpy as np
-from sklearn.model_selection import train_test_split
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 from cf_genie.embedders import EMBEDDERS
-from cf_genie.models import ComplementNaiveBayes, MultinomialNaiveBayes
+from cf_genie.models import SUPERVISED_MODELS
 from cf_genie.models.base import BaseModel
 from cf_genie.utils.timer import Timer
 
 logger.setup_applevel_logger(
-    is_debug=False, file_name=__file__, simple_logs=True)
+    is_debug=True, file_name=__file__, simple_logs=True)
 
 
 log = logger.get_logger(__name__)
 
 
-def print_train_results(model: BaseModel, X_train, y_train, X_test, y_test):
+def print_train_results(model: BaseModel, X, y):
     log.info('Model name %s', model.model_name)
-    preds = model.predict(X_train[:10])
-    log.info('Sample predictions on training data on model %s:', model.model_name)
-    for tag, pred in zip(y_train[:10], preds):
+    preds = model.predict(X[:10])
+    log.info('Sample predictions on model %s:', model.model_name)
+    for tag, pred in zip(y[:10], preds):
         log.info('Tag %s, Pred %s', tag, pred)
-    log.info('%s raining score: %s', model.model_name, model.training_score())
-
-    preds = model.predict(X_test[:10])
-    log.info('Sample predictions on training data %s:', model.model_name)
-    for tag, pred in zip(y_test[:10], preds):
-        log.info('Tag %s, Pred %s', tag, pred)
-    log.info('%s test score: %s', model.model_name, model.test_score(X_test, y_test))
+    # log.info('%s score: %s', model.model_name, model.training_score())
 
 
 def main():
     df = utils.read_cleaned_dataset()
-    # for embedder_class in EMBEDDERS:
-    #     embeder_name = embedder_class.__name__
-    #     with Timer('Reading words using {}'.format(embeder_name)):
-    #         words = embedder_class.read_embedded_words()
-
-    #     Y = df['most_occurrent_tag_group'].to_numpy()
-    #     log.info('Y count %s', df['most_occurrent_tag_group'].value_counts())
-    #     log.info('embedded words shape %s', words.shape)
-
-    #     scaler = MinMaxScaler()
-    #     with Timer('Fitting MinMaxScaler', log=log):
-    #         scaler.fit(words, Y)
-    #     # Training model with all data
-    #     with Timer('Building MNB with imbalance data, no splitting', log=log):
-    #         model = MultinomialNaiveBayes(scaler.transform(words), Y, run_in_mongo=embedder_class.USE_IN_MONGODB_HYPEROPT, version=f'imbalanced-using-{embeder_name}')
-
-    #     log.info('Model name %s', model.model_name)
-    #     preds = model.predict(words[:10])
-    #     log.info('Sample predictions without balancing:')
-    #     for tag, pred in zip(Y[:10], preds):
-    #         log.info('Tag %s, Pred %s', tag, pred)
-    #     log.info('MNB training score: %s', model.training_score())
-
-    #     ###
-    #     log.info('Training model with 50-50 data. ADHOC has most of the data, so let\'s split it')
-    #     Y_adhoc = np.vectorize(lambda tag: 'ADHOC' if tag == 'ADHOC' else 'NON_ADHOC')(Y)
-    #     model = MultinomialNaiveBayes(scaler.transform(words), Y_adhoc, run_in_mongo=embedder_class.USE_IN_MONGODB_HYPEROPT, version=f'balanced-using-{embeder_name}')
-    #     preds = model.predict(words[:10])
-    #     log.info('Sample predictions without balancing:')
-    #     for tag, pred in zip(Y_adhoc[:10], preds):
-    #         log.info('Tag %s, Pred %s', tag, pred)
-    #     log.info('MNB training score: %s', model.training_score())
-
-    #     ###
-    #     log.info('Training model with CMB')
-    #     model = ComplementNaiveBayes(scaler.transform(words), Y, run_in_mongo=embedder_class.USE_IN_MONGODB_HYPEROPT, version=f'using-{embeder_name}')
-    #     preds = model.predict(words[:10])
-    #     log.info('Sample predictions without balancing:')
-    #     for tag, pred in zip(Y[:10], preds):
-    #         log.info('Tag %s, Pred %s', tag, pred)
-    #     log.info('CNB training score: %s', model.training_score())
-
-    log.info("Let's test now with splitting data")
-    SPLIT_PERCENTAGES: List[Tuple[str, float]] = [
-        ('ten-percent', 0.1), ('twenty-percent', 0.2), ('thirty-percent', 0.3), ('fourty-percent', 0.4), ('fifty-percent', 0.5)]
-    for embedder_class in EMBEDDERS:
-        embeder_name = embedder_class.__name__
-        with Timer('Reading words using {}'.format(embeder_name)):
-            words = embedder_class.read_embedded_words()
-
-        Y = df['most_occurrent_tag_group'].to_numpy()
-        log.info('Y count %s', df['most_occurrent_tag_group'].value_counts())
-        log.info('embedded words shape %s', words.shape)
-
-        for percentage_label, percentage in SPLIT_PERCENTAGES:
-            # stratify makes sure that we keep the imbalance
-            X_train, X_test, y_train, y_test = train_test_split(
-                words, Y, test_size=percentage, random_state=42, stratify=Y)
-
-            # Training model with all data
-            model = MultinomialNaiveBayes(
-                X_train,
-                y_train,
-                X_test,
-                y_test,
-                label=f'training-data-{percentage_label}-imbalanced-using-{embeder_name}')
-
-            print_train_results(model, X_train, y_train, X_test, y_test)
-
-            ###
-            log.info('Training model with 50-50 data. ADHOC has most of the data, so let\'s split it')
-
-            # stratify makes sure that we keep the imbalance
-            Y_adhoc = np.vectorize(lambda tag: 'ADHOC' if tag == 'ADHOC' else 'NON_ADHOC')(Y)
-            X_train, X_test, y_train, y_test = train_test_split(
-                words, Y_adhoc, test_size=percentage, random_state=42, stratify=Y_adhoc)
-
-            model = MultinomialNaiveBayes(
-                X_train,
-                y_train,
-                X_test,
-                y_test,
-                label=f'training-data-{percentage_label}-balanced-using-{embeder_name}')
-
-            print_train_results(model, X_train, y_train, X_test, y_test)
-
-            ###
-            X_train, X_test, y_train, y_test = train_test_split(
-                words, Y, test_size=percentage, random_state=42, stratify=Y)
-
-            model = ComplementNaiveBayes(
-                X_train,
-                y_train,
-                X_test,
-                y_test,
-                label=f'training-data-{percentage_label}-using-{embeder_name}')
-
-            print_train_results(model, X_train, y_train, X_test, y_test)
+    y = df['most_occurrent_tag_group'].to_numpy()
+    with Timer('Running task ' + __file__, log=log):
+        for embedder_class in EMBEDDERS:
+            for model_class in SUPERVISED_MODELS:
+                with Timer(f'Loading embedded words for {embedder_class.__name__}', log=log):
+                    X = embedder_class.read_embedded_words()
+                with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__}', log=log):
+                    model = model_class(X, y, label='with-' + embedder_class.__name__ + '-on-imbalanced-data')
+                    print_train_results(model, X, y)
 
 
 if __name__ == '__main__':

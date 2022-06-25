@@ -36,30 +36,6 @@ class BaseModel(logger.Loggable):
         raise NotImplementedError("Subclasses of BaseModel should implement `train`")
 
 
-def _objective_fn_for_hyperopt(X_file, Y, model_name, model_fn: Callable[[object], object], log: logger.Logger, params):
-    X = np.load(X_file)
-
-    model = model_fn(**params)
-
-    with Timer(f'Training {model_name} model with params {params}', log=log):
-        scores = cross_validate(
-            model,
-            X,
-            Y,
-            cv=5,
-            scoring=(
-                'f1_micro',
-                'f1_macro',
-                'f1_weighted'),
-            return_train_score=True,
-            n_jobs=-1)
-
-    return {
-        'loss': -scores['test_f1_micro'],
-        'status': STATUS_OK,
-        **scores,
-    }
-
 
 class BaseSupervisedModel(BaseModel):
     """
@@ -85,44 +61,78 @@ class BaseSupervisedModel(BaseModel):
         self._y = y
         super().__init__(label)
 
-    def init_model_object(self, params) -> object:
+    @staticmethod
+    def init_model_object(**params) -> object:
         raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `init_model_object`")
 
-    @classmethod
-    def _get_search_space(cls) -> object:
+    @staticmethod
+    def _get_search_space() -> object:
         raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `_get_search_space`")
+
+    @classmethod
+    def _objective_fn_for_hyperopt(cls, X_file, y, model_name, log: logger.Logger, params: Dict[str, Any]) -> Callable:
+        with Timer(f'Loading X from disk', log=log):
+            X = np.load(X_file)
+
+        model = cls.init_model_object(**params)
+        log.info('model memory address: %s', hex(id(model)))
+
+        scorers = (
+            'f1_micro',
+            'f1_macro',
+            'f1_weighted')
+        with Timer(f'Training {model_name} {model} model with params {params}', log=log):
+            scores = cross_validate(
+                model,
+                X,
+                y,
+                cv=10,
+                scoring=scorers,
+                # return_train_score=True,
+                n_jobs=-1)
+
+        log.info('scores: %s', scores)
+        results = {
+            'loss': -scores['test_f1_micro'].mean(),
+            'status': STATUS_OK,
+        }
+        scorers = ['test_' + scorer for scorer in scorers]
+        results.update({key: scores[key].mean() for key in scores if key in scorers})
+        log.debug('Results: %s', results)
+        return results
+
 
     def train(self):
         model_name = self.model_name
         model_path = utils.get_model_path(f'{model_name}.pkl')
         try:
+            self.log.debug('Attempting to load %s from disk storage', model_path)
             model = utils.read_model_from_file(model_path)
-        except BaseException:
+            self.log.debug('Model %s found on disk', model_path)
+        except FileNotFoundError:
             self.log.debug('Model not stored. Building %s model from scratch using hyper-parameterization', model_name)
             with tempfile.NamedTemporaryFile() as tempf_X:
                 with Timer(f'Storing train and test arrays in files for model {model_name}', log=self.log):
                     np.save(tempf_X, self._X)
 
                 with Timer(f'{model_name} hyper-parameterization', log=self.log):
-                    hyperopt_info = utils.run_hyperopt(
-                        partial(
-                            _objective_fn_for_hyperopt,
-                            tempf_X.name,
-                            self._y,
-                            model_name,
-                            self.init_model_object,
-                            self.log),
-                        self.__class__._get_search_space(),
+                    hyperopt_info = utils.run_hyperopt(partial(self._objective_fn_for_hyperopt, tempf_X.name, self._y, model_name, self.log),
+                        self._get_search_space(),
                         mongo_exp_key=model_name,
-                        fmin_kwrgs={
-                            'max_evals': 60})
-                    model = hyperopt_info.best_model
+                        store_in_mongo=False,
+                        fmin_kwrgs=self.get_fmin_kwargs())
+                    model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
+                    model.fit(self._X, self._y)
                     utils.write_model_to_file(model_path, model)
 
         self._model = model
 
+    @staticmethod
+    def get_fmin_kwargs():
+        raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `get_fmin_kwargs`")
+
     def predict(self, X) -> Any:
-        raise NotImplementedError("Subclasses of BaseMel should implement `predict`")
+        raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `predict`")
 
 
 class BaseUnSupervisedModel(BaseModel):
