@@ -62,7 +62,7 @@ def main():
                         label='with-' +
                         embedder_class.__name__ +
                         '-without-ADHOC-data')
-                    print_train_results(model, X, y_balanced)
+                    print_train_results(model, get_x(), y[y_not_adhoc])
 
 
 if __name__ == '__main__':
