@@ -4,18 +4,16 @@ Tesis de grado para optar al título de Ingeniería de la Computación en la Uni
 
 # Instalacion
 
-Como cualquier proyecto de python, primero hay que configurar un ambiente virtual. Luego de crearlo y activarlo, hay que correr el siguiente comando para instalar
-las dependencias escenciales:
+> La guia de instalacion esta disenada para mi computadora personal, que corre en Apple M1 Max. Algunas cosas pueden variar
 
-```shell
-pip install -r requirements.txt
+Primero, instale [Miniforge3](https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh). Luego, execute el siguiente comando para crear un ambiente de _conda_:
+
+```bash
+conda  env create --name cf-genie --file environment.yml
 ```
 
-Si deseas desarrollar, debes insetalar las dependencias de desarrollo:
+Este comando va a crear un ambiente de `conda` con todas las dependencias instaladas.
 
-```shell
-pip install -r dev_requirements.txt
-```
 
 # Uso
 
