@@ -10,7 +10,7 @@ from hyperopt import Trials, fmin, space_eval, tpe
 from hyperopt.mongoexp import MongoTrials, OperationFailure
 
 import cf_genie.logger as logger
-from cf_genie.utils.read_write_files import write_hyper_parameters
+from cf_genie.utils.read_write_files import write_hyper_parameters, write_train_results
 
 log = logger.get_logger(__name__)
 
@@ -66,6 +66,10 @@ def run_hyperopt(model_fn, search_space, store_in_mongo=True, mongo_exp_key=None
     except Exception:
         log.warn('Could not load best model from MongoDB for model %s', mongo_exp_key)
 
+    log.info('Best trial: %s', trials.best_trial['result'])
+
     if mongo_exp_key:
         write_hyper_parameters(mongo_exp_key, run.best_params_evaluated_space)
+        log.info('Writing train results to disk: %s', mongo_exp_key)
+        write_train_results(mongo_exp_key, trials.best_trial['result'])
     return run

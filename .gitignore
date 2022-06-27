@@ -170,3 +170,4 @@ mongo-data/
 logfile.txt
 /models/
 hyper-parameters/
+train-results/

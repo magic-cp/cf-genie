@@ -18,7 +18,7 @@ from cf_genie.embedders.tfidf import (TfidfEmbedderBiGram,
 
 EMBEDDERS: List[Type[BaseEmbedder]] = [
     # Doc2vec variations
-    Doc2VecEmbedder,
+    # Doc2VecEmbedder,
     Doc2VecEmbedder30,
     Doc2VecEmbedder50,
     Doc2VecEmbedder100,
@@ -26,7 +26,7 @@ EMBEDDERS: List[Type[BaseEmbedder]] = [
     Doc2VecEmbedder200,
 
     # FastText variations
-    FastTextEmbedder,
+    # FastTextEmbedder,
     FastTextEmbedder30,
     FastTextEmbedder50,
     FastTextEmbedder100,
@@ -35,4 +35,6 @@ EMBEDDERS: List[Type[BaseEmbedder]] = [
 
     # tf-idf variations
     TfidfEmbedderUniGram,
-]  # TfidfEmbedderBiGram]  # , TfidfEmbedderTriGram]
+    # TfidfEmbedderBiGram,
+    # TfidfEmbedderTriGram
+]
