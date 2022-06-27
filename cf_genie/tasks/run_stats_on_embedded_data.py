@@ -1,3 +1,5 @@
+from itertools import cycle
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -18,6 +20,9 @@ log = logger.get_logger(__name__)
 
 def main():
     log.info('Coefficient of variations (COV) higher than ones means that we should not use MinMaxScaler')
+    df = utils.read_cleaned_dataset()
+    y = df['most_occurrent_tag_group'].to_numpy()
+    unique_y = np.unique(y)
     for embedder in EMBEDDERS:
         log.info('Checking stats for %s', embedder.__name__)
         words = embedder.read_embedded_words()
@@ -52,15 +57,22 @@ def main():
             points = pca.fit_transform(words)
 
         plt.figure(figsize=(10, 6))
-        plt.plot(points[:, 0], points[:, 1], '.')
+        for label in unique_y:
+            y_label = y == label
+            X_label = points[y_label]
+            plt.scatter(X_label[:, 0], X_label[:, 1], label=label)
         plt.title(f'PCA components for {embedder.__name__}')
+        plt.legend()
+        plt.grid()
         utils.write_plot(f'pca/pca-plot-{embedder.__name__}.png', plt)
+        plt.close()
 
         plt.figure(figsize=(10, 6))
         plt.hist2d(points[:, 0], points[:, 1], bins=75, cmap='plasma')
         plt.title(f'Histogram for {embedder.__name__}')
         plt.colorbar()
         utils.write_plot(f'histograms/hist2d-{embedder.__name__}.png', plt)
+        plt.close()
 
 
 if __name__ == '__main__':
