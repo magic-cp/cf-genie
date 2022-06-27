@@ -10,7 +10,8 @@ from hyperopt import Trials, fmin, space_eval, tpe
 from hyperopt.mongoexp import MongoTrials, OperationFailure
 
 import cf_genie.logger as logger
-from cf_genie.utils.read_write_files import write_hyper_parameters, write_train_results
+from cf_genie.utils.read_write_files import (write_hyper_parameters,
+                                             write_train_results)
 
 log = logger.get_logger(__name__)
 

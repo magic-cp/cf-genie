@@ -19,7 +19,7 @@ MODELS_PATH = os.path.join(PROJECT_DIR, 'models')
 HYPER_PARAMETERS_PATH = os.path.join(PROJECT_DIR, 'hyper-parameters')
 TRAIN_RESULTS_PATH = os.path.join(PROJECT_DIR, 'train-results')
 
-PATHS_TO_ENSURE = [DATASET_PATH, PLOTS_PATH, TEMP_PATH,MODELS_PATH, HYPER_PARAMETERS_PATH, TRAIN_RESULTS_PATH]
+PATHS_TO_ENSURE = [DATASET_PATH, PLOTS_PATH, TEMP_PATH, MODELS_PATH, HYPER_PARAMETERS_PATH, TRAIN_RESULTS_PATH]
 
 for path in PATHS_TO_ENSURE:
     Path(path).mkdir(parents=True, exist_ok=True)
@@ -97,12 +97,12 @@ def write_hyper_parameters(model_name, hyper_parameters):
     with open(file_name, 'w') as f:
         json.dump(hyper_parameters, f, indent=4)
 
+
 @_absolute_file_path(TRAIN_RESULTS_PATH)
 def write_train_results(model_name, results):
     file_name = model_name + '.json'
     with open(file_name, 'w') as f:
         json.dump(results, f, indent=4)
-
 
 
 @_absolute_file_path(MODELS_PATH)
