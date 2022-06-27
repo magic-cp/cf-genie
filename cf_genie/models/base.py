@@ -70,7 +70,9 @@ class BaseSupervisedModel(BaseModel):
 
     @staticmethod
     def get_fmin_kwargs():
-        raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `get_fmin_kwargs`")
+        return {
+            'max_evals': 60,
+        }
 
     def predict(self, X) -> Any:
         raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `predict`")
@@ -125,7 +127,6 @@ class BaseSupervisedModel(BaseModel):
             model = self._train_if_not_in_disk()
             utils.write_model_to_file(model_path, model)
 
-
         self._model = model
 
     def _train_if_not_in_disk(self):
@@ -133,14 +134,21 @@ class BaseSupervisedModel(BaseModel):
         self.log.debug('Model not stored. Building %s model from scratch using hyper-parameterization', model_name)
 
         with Timer(f'{model_name} hyper-parameterization', log=self.log):
-            hyperopt_info = utils.run_hyperopt(partial(self._objective_fn_for_hyperopt, self._X_getter, self._y, model_name, self.log),
-                                                self._get_search_space(),
-                                                mongo_exp_key=model_name,
-                                                # store_in_mongo=False,
-                                                fmin_kwrgs=self.get_fmin_kwargs())
+            hyperopt_info = utils.run_hyperopt(
+                partial(
+                    self._objective_fn_for_hyperopt,
+                    self._X_getter,
+                    self._y,
+                    model_name,
+                    self.log),
+                self._get_search_space(),
+                mongo_exp_key=model_name,
+                store_in_mongo=False,
+                fmin_kwrgs=self.get_fmin_kwargs())
         model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
         model.fit(self._X_getter(), self._y)
         return model
+
 
 class BaseUnSupervisedModel(BaseModel):
     """
