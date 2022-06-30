@@ -22,6 +22,7 @@ def main():
     log.info('Coefficient of variations (COV) higher than ones means that we should not use MinMaxScaler')
     df = utils.read_cleaned_dataset()
     y = df['most_occurrent_tag_group'].to_numpy()
+    print(df.count()['most_ocurrent'])
     unique_y = np.unique(y)
     for embedder in EMBEDDERS:
         log.info('Checking stats for %s', embedder.__name__)
@@ -56,6 +57,9 @@ def main():
             pca = PCA(n_components=2)
             points = pca.fit_transform(words)
 
+        y = np.vectorize(lambda x: 'GEOMETRY' if x == 'GEOMETRY' else 'ADHOC')(y)
+        unique_y = np.unique(y)
+
         plt.figure(figsize=(10, 6))
         for label in unique_y:
             y_label = y == label
@@ -64,15 +68,15 @@ def main():
         plt.title(f'PCA components for {embedder.__name__}')
         plt.legend()
         plt.grid()
-        utils.write_plot(f'pca/pca-plot-{embedder.__name__}.png', plt)
+        utils.write_plot(f'pca/pca-plot-{embedder.__name__}-demo.png', plt)
         plt.close()
 
-        plt.figure(figsize=(10, 6))
-        plt.hist2d(points[:, 0], points[:, 1], bins=75, cmap='plasma')
-        plt.title(f'Histogram for {embedder.__name__}')
-        plt.colorbar()
-        utils.write_plot(f'histograms/hist2d-{embedder.__name__}.png', plt)
-        plt.close()
+        # plt.figure(figsize=(10, 6))
+        # plt.hist2d(points[:, 0], points[:, 1], bins=75, cmap='plasma')
+        # plt.title(f'Histogram for {embedder.__name__}')
+        # plt.colorbar()
+        # utils.write_plot(f'histograms/hist2d-{embedder.__name__}.png', plt)
+        # plt.close()
 
 
 if __name__ == '__main__':

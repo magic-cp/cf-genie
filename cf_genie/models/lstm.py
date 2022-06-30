@@ -5,28 +5,30 @@ Long-short Term Memory (LSTM) model.
 from typing import Any, Callable, Dict, List
 
 from hyperopt import hp
-from keras import Sequential, layers, optimizers
+from keras import Sequential, layers
 from keras.utils import np_utils
 from scikeras.wrappers import KerasClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
+import keras
 
 import cf_genie.logger as logger
 from cf_genie.models.base import BaseSupervisedModel
+from cf_genie.utils import get_model_path
 
 
 def get_clf_model(meta: Dict[str, Any]) -> Sequential:
-    model = Sequential()
+    model = Sequential(name='LSTM-cf-genie')
 
-    model.add(layers.LSTM(20, input_shape=(meta['n_features_in_'], 1)))
+    model.add(layers.LSTM(30, name='lstm-layer', input_shape=(meta['n_features_in_'], 1)))
 
     assert meta['target_type_'] == 'multiclass', 'Only multiclass target is supported'
 
     n_output_units = meta['n_classes_']
     output_activation = 'softmax'
 
-    model.add(layers.Dense(n_output_units, activation=output_activation))
+    model.add(layers.Dense(n_output_units, name='output', activation=output_activation))
 
     model.summary()
     return model
@@ -37,13 +39,13 @@ class LSTM(BaseSupervisedModel):
 
         clf = KerasClassifier(
             model=get_clf_model,
-            epochs=30,
-            batch_size=-1,
+            epochs=50,
+            batch_size=500,
             verbose=1,
             loss='categorical_crossentropy',
-            metrics=['accuracy'],
+            metrics=['categorical_accuracy'],
             optimizer='sgd',
-            optimizer__learning_rate=0.01,
+            optimizer__learning_rate=0.001,
             optimizer__momentum=0.9
             )
         return clf
@@ -66,6 +68,23 @@ class LSTM(BaseSupervisedModel):
 
     def predict(self, X) -> Any:
         return self.model.predict(X)
+
+    @property
+    def model_path(self) -> str:
+        return get_model_path(self.model_name + '.hdf5')
+
+    def _read_model_from_disk(self) -> Any:
+        try:
+            new_reg_model = keras.models.load_model(self.model_path)
+            reg_new = KerasClassifier(new_reg_model)
+            reg_new.initialize(self._X_getter(), self._y)
+            return reg_new
+        except OSError:
+            raise FileNotFoundError('Model file not found: ' + self.model_path)
+
+    def _save_model_to_disk(self, model) -> Any:
+        model.model_.save(self.model_path)
+
 
     # @classmethod
     # def _objective_fn_for_hyperopt(cls,

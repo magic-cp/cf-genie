@@ -116,16 +116,25 @@ class BaseSupervisedModel(BaseModel):
         log.debug('Results: %s', results)
         return results
 
+    def _read_model_from_disk(self) -> Any:
+        return utils.read_model_from_file(self.model_path)
+
+    @property
+    def model_path(self):
+        return self.model_name + '.pkl'
+
+    def _save_model_to_disk(self, model) -> Any:
+        utils.write_model_to_file(self.model_path, model)
+
     def train(self):
-        model_name = self.model_name
-        model_path = utils.get_model_path(f'{model_name}.pkl')
         try:
-            self.log.debug('Attempting to load %s from disk storage', model_path)
-            model = utils.read_model_from_file(model_path)
-            self.log.debug('Model %s found on disk', model_path)
+            self.log.debug('Attempting to load %s from disk storage')
+            model = self._read_model_from_disk()
+            self.log.debug('Model %s found on disk', self.model_path)
+
         except FileNotFoundError:
             model = self._train_if_not_in_disk()
-            utils.write_model_to_file(model_path, model)
+            self._save_model_to_disk(model)
 
         self._model = model
 
