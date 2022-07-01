@@ -32,37 +32,36 @@ def main():
             for model_class in SUPERVISED_MODELS:
                 with Timer(f'Loading embedded words for {embedder_class.__name__}', log=log):
                     X = embedder_class.read_embedded_words()
-                with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on imbalanced data', log=log):
+                with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes', log=log):
                     model = model_class(
                         embedder_class.read_embedded_words,
                         y,
                         label='with-' +
                         embedder_class.__name__ +
-                        '-on-imbalanced-data')
+                        '-on-all-classes')
                     print_train_results(model, X, y)
-                y_balanced = np.vectorize(lambda x: 'ADHOC' if x == 'ADHOC' else 'NON_ADHOC')(y)
-                # with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on balanced data', log=log):
-                #     model = model_class(
-                #         embedder_class.read_embedded_words,
-                #         y_balanced,
-                #         label='with-' +
-                #         embedder_class.__name__ +
-                #         '-on-balanced-data')
-                #     print_train_results(model, X, y_balanced)
+                for tag_group in utils.TAG_GROUPS:
+                    non_tag_group = f'NON_{tag_group}'
+                    y_tag_group = np.vectorize(lambda x: tag_group if x == tag_group else non_tag_group)(y)
+                    log.info(np.unique(y_tag_group))
+                    with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on tag group {tag_group} vs others', log=log):
+                        model = model_class(
+                            embedder_class.read_embedded_words,
+                            y_tag_group,
+                            label=f'with-{embedder_class.__name__}-on-{tag_group}-vs-rest-classes')
+                        print_train_results(model, X, y_tag_group)
 
-                # with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except ADHOC data', log=log):
-                #     y_not_adhoc = y != 'ADHOC'
+                    with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except {tag_group} data', log=log):
+                        y_not_tag_group = y != tag_group
 
-                #     def get_x():
-                #         X = embedder_class.read_embedded_words()
-                #         return X[y_not_adhoc]
-                #     model = model_class(
-                #         get_x,
-                #         y[y_not_adhoc],
-                #         label='with-' +
-                #         embedder_class.__name__ +
-                #         '-without-ADHOC-data')
-                #     print_train_results(model, get_x(), y[y_not_adhoc])
+                        def get_x():
+                            X = embedder_class.read_embedded_words()
+                            return X[y_not_tag_group]
+                        model = model_class(
+                            get_x,
+                            y[y_not_tag_group],
+                            label=f'with-{embedder_class.__name__}-without-{tag_group}-class')
+                        print_train_results(model, get_x(), y[y_not_tag_group])
 
 
 if __name__ == '__main__':
