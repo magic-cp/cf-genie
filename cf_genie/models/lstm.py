@@ -17,28 +17,26 @@ import cf_genie.logger as logger
 from cf_genie.models.base import BaseSupervisedModel
 from cf_genie.utils import get_model_path
 
-log = logger.get_logger(__name__)
-
 
 class LSTM(BaseSupervisedModel):
     @staticmethod
     def init_model_object(**params) -> Sequential:
-        log.info('HP-PARAMS: %s', params)
 
         def get_clf_model(meta: Dict[str, Any], compile_kwargs: Dict[str, Any]) -> Sequential:
             model = Sequential(name='LSTM-cf-genie')
 
             model.add(
                 layers.ZeroPadding1D(
-                    padding=3,
+                    padding=params['zero-padding-layer-padding'],
                     name='zero-padding-layer',
                     input_shape=(
                         meta['n_features_in_'],
                         1)))
 
-            model.add(layers.Bidirectional(layers.LSTM(16, name='lstm-layer', return_sequences=True)))
+            model.add(layers.Bidirectional(layers.LSTM(params['lstm-layer-1'], name='lstm-layer-1', return_sequences=params['lstm-layer-2'] is not None), name='lstm-layer-1'))
 
-            model.add(layers.LSTM(50, name='lstm-layer-2', return_sequences=False))
+            if params['lstm-layer-2'] is not None:
+                model.add(layers.LSTM(params['lstm-layer-2'], name='lstm-layer-2', return_sequences=False))
 
             if meta['target_type_'] == 'multiclass':
                 n_output_units = meta['n_classes_']
@@ -53,6 +51,9 @@ class LSTM(BaseSupervisedModel):
             else:
                 raise ValueError('Model does not support target type: ' + meta['target_type_'])
 
+            if params['dropout'] > 0:
+                model.add(layers.Dropout(params['dropout'], name='dropout-layer'))
+
             model.add(layers.Dense(n_output_units, name='output', activation=output_activation))
 
             model.compile(loss=loss, metrics=metrics, optimizer=compile_kwargs['optimizer'])
@@ -62,7 +63,7 @@ class LSTM(BaseSupervisedModel):
 
         clf = KerasClassifier(
             model=get_clf_model,
-            epochs=50,
+            epochs=40,
             batch_size=500,
             verbose=1,
             # We have to set this value even for binary classification. Otherwise, the target encoder won't use One hot encoding
@@ -75,7 +76,10 @@ class LSTM(BaseSupervisedModel):
     @staticmethod
     def _get_search_space() -> object:
         return {
-            'zero_padding_layer_padding': hp.choice('bla', [0])
+            'zero-padding-layer-padding': hp.choice('zero-padding-layer-padding', [1, 3, 5, 7]),
+            'lstm-layer-1': hp.choice('lstm-layer-1', [16, 32, 64, 128, 256]),
+            'lstm-layer-2': hp.choice('lstm-layer-2', [None, 8]),
+            'dropout': hp.uniform('dropout', 0, 0.5),
         }
 
     @property
@@ -85,7 +89,7 @@ class LSTM(BaseSupervisedModel):
     @staticmethod
     def get_fmin_kwargs():
         return {
-            'max_evals': 1
+            'max_evals': 80
         }
 
     def predict(self, X) -> Any:
