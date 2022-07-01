@@ -152,7 +152,7 @@ class BaseSupervisedModel(BaseModel):
                     self.log),
                 self._get_search_space(),
                 mongo_exp_key=model_name,
-                # store_in_mongo=False,
+                store_in_mongo=False,
                 fmin_kwrgs=self.get_fmin_kwargs())
         model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
         model.fit(self._X_getter(), self._y)
