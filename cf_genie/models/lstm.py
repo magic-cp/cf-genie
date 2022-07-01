@@ -4,6 +4,7 @@ Long-short Term Memory (LSTM) model.
 
 from typing import Any, Callable, Dict, List
 
+import keras
 from hyperopt import hp
 from keras import Sequential, layers
 from keras.utils import np_utils
@@ -11,49 +12,70 @@ from scikeras.wrappers import KerasClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
-import keras
 
 import cf_genie.logger as logger
 from cf_genie.models.base import BaseSupervisedModel
 from cf_genie.utils import get_model_path
 
+log = logger.get_logger(__name__)
 
-def get_clf_model(meta: Dict[str, Any]) -> Sequential:
-    model = Sequential(name='LSTM-cf-genie')
-
-    model.add(layers.LSTM(30, name='lstm-layer', input_shape=(meta['n_features_in_'], 1)))
-
-    assert meta['target_type_'] == 'multiclass', 'Only multiclass target is supported'
-
-    n_output_units = meta['n_classes_']
-    output_activation = 'softmax'
-
-    model.add(layers.Dense(n_output_units, name='output', activation=output_activation))
-
-    model.summary()
-    return model
 
 class LSTM(BaseSupervisedModel):
     @staticmethod
     def init_model_object(**params) -> Sequential:
+        log.info('HP-PARAMS: %s', params)
+
+        def get_clf_model(meta: Dict[str, Any], compile_kwargs: Dict[str, Any]) -> Sequential:
+            model = Sequential(name='LSTM-cf-genie')
+
+            model.add(
+                layers.ZeroPadding1D(
+                    padding=3,
+                    name='zero-padding-layer',
+                    input_shape=(
+                        meta['n_features_in_'],
+                        1)))
+
+            model.add(layers.Bidirectional(layers.LSTM(16, name='lstm-layer', return_sequences=True)))
+
+            model.add(layers.LSTM(50, name='lstm-layer-2', return_sequences=False))
+
+            if meta['target_type_'] == 'multiclass':
+                n_output_units = meta['n_classes_']
+                output_activation = 'softmax'
+                loss = 'categorical_crossentropy'
+                metrics = ['categorical_accuracy']
+            elif meta['target_type_'] == 'binary':
+                n_output_units = 1
+                output_activation = 'sigmoid'
+                loss = 'binary_crossentropy'
+                metrics = ['binary_accuracy']
+            else:
+                raise ValueError('Model does not support target type: ' + meta['target_type_'])
+
+            model.add(layers.Dense(n_output_units, name='output', activation=output_activation))
+
+            model.compile(loss=loss, metrics=metrics, optimizer=compile_kwargs['optimizer'])
+
+            model.summary()
+            return model
 
         clf = KerasClassifier(
             model=get_clf_model,
             epochs=50,
             batch_size=500,
             verbose=1,
+            # We have to set this value even for binary classification. Otherwise, the target encoder won't use One hot encoding
             loss='categorical_crossentropy',
-            metrics=['categorical_accuracy'],
-            optimizer='sgd',
+            optimizer='adam',
             optimizer__learning_rate=0.001,
-            optimizer__momentum=0.9
-            )
+        )
         return clf
 
     @staticmethod
     def _get_search_space() -> object:
         return {
-            'bla': hp.uniform('bla', 0, 1)
+            'zero_padding_layer_padding': hp.choice('bla', [0])
         }
 
     @property
@@ -84,37 +106,3 @@ class LSTM(BaseSupervisedModel):
 
     def _save_model_to_disk(self, model) -> Any:
         model.model_.save(self.model_path)
-
-
-    # @classmethod
-    # def _objective_fn_for_hyperopt(cls,
-    #                                X_getter: Callable[[],
-    #                                                   List[List[float]]],
-    #                                y,
-    #                                model_name,
-    #                                log: logger.Logger,
-    #                                params: Dict[str,
-    #                                             Any]) -> Callable:
-    #     X = X_getter()
-    #     X = X.reshape((X.shape[0], 1, X.shape[1]))
-    #     skf = StratifiedKFold(n_splits=2)
-
-    #     # Neural network plays better with one-hot encoding of output labels.
-    #     label_encoder = LabelEncoder().fit(y)
-    #     dummy_y = np_utils.to_categorical(label_encoder.transform(y))
-
-    #     model = Sequential()
-
-    #     model.add(layers.LSTM(20, input_shape=(X.shape[1:])))
-    #     model.add(layers.Dense(dummy_y.shape[1], activation='softmax'))
-    #     model.summary()
-
-    #     model.compile()
-
-    #     for train_index, test_index in skf.split(X, y):
-    #         X_train, X_test = X[train_index], X[test_index]
-    #         y_train, y_test = y[train_index], y[test_index]
-
-    #         model.fit(X_train, y_train, epochs=10)
-
-    #     pass
