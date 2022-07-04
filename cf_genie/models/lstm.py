@@ -2,21 +2,26 @@
 Long-short Term Memory (LSTM) model.
 """
 
-from typing import Any, Callable, Dict, List
+from typing import Any, Dict
 
 import keras
 from hyperopt import hp
 from keras import Sequential, layers
-from keras.utils import np_utils
 from scikeras.wrappers import KerasClassifier
-from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
 
-import cf_genie.logger as logger
 from cf_genie.models.base import BaseSupervisedModel
 from cf_genie.utils import get_model_path
 
+
+class KerasClassifierWithOneHotEncoding(KerasClassifier):
+    @property
+    def target_encoder(self):
+        encoder = super().target_encoder
+        # We have to set this value even for binary classification. Otherwise, the target encoder won't use One hot encoding
+        encoder.loss = 'categorical_crossentropy'
+
+        return encoder
 
 class LSTM(BaseSupervisedModel):
     @staticmethod
@@ -61,13 +66,11 @@ class LSTM(BaseSupervisedModel):
             model.summary()
             return model
 
-        clf = KerasClassifier(
+        clf = KerasClassifierWithOneHotEncoding(
             model=get_clf_model,
             epochs=40,
             batch_size=500,
             verbose=1,
-            # We have to set this value even for binary classification. Otherwise, the target encoder won't use One hot encoding
-            loss='categorical_crossentropy',
             optimizer='adam',
             optimizer__learning_rate=0.001,
         )
@@ -83,7 +86,7 @@ class LSTM(BaseSupervisedModel):
         }
 
     @property
-    def model(self) -> KerasClassifier:
+    def model(self) -> KerasClassifierWithOneHotEncoding:
         return self._model
 
     @staticmethod
