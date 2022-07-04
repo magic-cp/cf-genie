@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 
+
 PROBLEM_STATEMENT_SELECTOR = '.problem-statement'
 TITLE_SELECTOR = PROBLEM_STATEMENT_SELECTOR + ' .title'
 STATEMENT_SELECTOR = PROBLEM_STATEMENT_SELECTOR + ' .header + div > p'
@@ -22,7 +23,7 @@ TAG_SELECTOR = 'span.tag-box'
 
 
 logger.setup_applevel_logger(
-    is_debug=True, file_name=__file__, simple_logs=False)
+    is_debug=False, file_name=__file__, simple_logs=False)
 
 log = logger.get_logger(__name__)
 
