@@ -236,6 +236,6 @@ def preprocess_cf_statement(text: str) -> List[str]:
 
     # Stemmization
     words = stem_words(words)
-    log.info('Tokens after stemming: %s', words)
+    log.debug('Tokens after stemming: %s', words)
 
     return words
