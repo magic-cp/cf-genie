@@ -10,7 +10,7 @@ from cf_genie.models import BaseSupervisedModel
 from cf_genie.models.base import TrainingMethod
 from cf_genie.utils import Timer
 
-log = logger.get_logger()
+log = logger.get_logger(__name__)
 
 
 def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[BaseEmbedder], y: np.ndarray):
