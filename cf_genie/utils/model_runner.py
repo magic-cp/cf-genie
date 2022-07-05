@@ -24,7 +24,27 @@ def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[Ba
             embedder_class.__name__ +
             '-on-all-classes')
 
-    return model
+def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[BaseEmbedder], y: np.ndarray):
+    for tag_group in np.unique(y):
+        non_tag_group = f'NON_{tag_group}'
+        y_tag_group = np.vectorize(lambda x: tag_group if x == tag_group else non_tag_group)(y)
+        log.info(np.unique(y_tag_group))
+        with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on tag group {tag_group} vs others', log=log):
+            model_class(
+                embedder_class.read_embedded_words,
+                y_tag_group,
+                label=f'with-{embedder_class.__name__}-on-{tag_group}-vs-rest-classes')
+
+        with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except {tag_group} data', log=log):
+            y_not_tag_group = y != tag_group
+
+            def get_x():
+                X = embedder_class.read_embedded_words()
+                return X[y_not_tag_group]
+            model_class(
+                get_x,
+                y[y_not_tag_group],
+                label=f'with-{embedder_class.__name__}-without-{tag_group}-class')
 
 
 class RunStrategy(Enum):
@@ -33,16 +53,13 @@ class RunStrategy(Enum):
     UNDERSAMPLING = auto()
 
 
-STRATEGY_FUNS = {
-    RunStrategy.ALL: all_strategy
-}
-
-
 def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray, run_strategy: RunStrategy):
     for embedder in EMBEDDERS:
         with Timer(f'Training {model_class.__name__} on embedder {embedder.__name__}'):
             if RunStrategy.ALL == run_strategy:
                 fun = all_strategy
+            elif RunStrategy.ONE_VS_ALL == run_strategy:
+                fun = one_vs_all
             else:
                 raise NotImplementedError(run_strategy.__str__())
             fun(model_class, embedder, y)
