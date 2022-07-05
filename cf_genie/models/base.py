@@ -11,7 +11,8 @@ from sklearn.model_selection import GridSearchCV, cross_validate
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 from cf_genie.utils import Timer
-from cf_genie.utils.read_write_files import write_grid_search_cv_results, write_hyper_parameters
+from cf_genie.utils.read_write_files import (write_grid_search_cv_results,
+                                             write_hyper_parameters)
 
 
 class TrainingMethod(Enum):

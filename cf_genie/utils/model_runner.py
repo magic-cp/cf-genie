@@ -24,6 +24,7 @@ def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[Ba
             embedder_class.__name__ +
             '-on-all-classes')
 
+
 def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[BaseEmbedder], y: np.ndarray):
     for tag_group in np.unique(y):
         non_tag_group = f'NON_{tag_group}'
