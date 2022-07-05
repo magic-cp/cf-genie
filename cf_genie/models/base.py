@@ -1,14 +1,25 @@
 import tempfile
+from enum import Enum, auto
 from functools import partial
 from typing import Any, Callable, Dict, List
 
 import numpy as np
 from hyperopt import STATUS_OK
-from sklearn.model_selection import cross_validate
+from sklearn.metrics import f1_score, hamming_loss, make_scorer
+from sklearn.model_selection import GridSearchCV, cross_validate
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 from cf_genie.utils import Timer
+
+
+class TrainingMethod(Enum):
+    HYPEROPT = auto()
+    GRID_SEARCH_CV = auto()
+
+
+def hamming_score(*args, **kwargs):
+    return 1 - hamming_loss(*args, **kwargs)
 
 
 class BaseModel(logger.Loggable):
@@ -46,10 +57,17 @@ class BaseSupervisedModel(BaseModel):
     - init_model_object: A function that returns a model object. This function is called when the model is not stored.
     - train: A function that trains the model.
     """
+    SCORERS = {
+        'f1_micro': 'f1_micro',
+        'f1_macro': 'f1_macro',
+        'f1_weighted': 'f1_weighted',
+        'hamming_score': make_scorer(hamming_loss, greater_is_better=False),
+    }
 
     def __init__(self,
                  X_getter: Callable[[], List[List[float]]],
                  y: List[str],
+                 training_method: TrainingMethod,
                  label: str = ''):
         """
         Initialize the embedder.
@@ -58,6 +76,7 @@ class BaseSupervisedModel(BaseModel):
         """
         self._X_getter = X_getter
         self._y = y
+        self.training_method = training_method
         super().__init__(label)
 
     @staticmethod
@@ -92,19 +111,15 @@ class BaseSupervisedModel(BaseModel):
         model = cls.init_model_object(**params)
         log.info('model memory address: %s', hex(id(model)))
 
-        scorers = (
-            'f1_micro',
-            'f1_macro',
-            'f1_weighted')
         with Timer(f'Training {model_name} {model} model with params {params}', log=log):
             scores = cross_validate(
                 model,
                 X,
                 y,
                 cv=10,
-                scoring=scorers,
+                scoring=cls.SCORERS,
                 # return_train_score=True,
-                n_jobs=2, verbose=2)
+                n_jobs=2, verbose=1)
 
         log.info('scores: %s', scores)
         results = {
@@ -133,6 +148,7 @@ class BaseSupervisedModel(BaseModel):
             self.log.debug('Model %s found on disk', self.model_path)
 
         except FileNotFoundError:
+            self.log.info('Model %s not stored', self.model_name)
             model = self._train_if_not_in_disk()
             self._save_model_to_disk(model)
 
@@ -140,23 +156,49 @@ class BaseSupervisedModel(BaseModel):
 
     def _train_if_not_in_disk(self):
         model_name = self.model_name
-        self.log.debug('Model not stored. Building %s model from scratch using hyper-parameterization', model_name)
 
-        with Timer(f'{model_name} hyper-parameterization', log=self.log):
-            hyperopt_info = utils.run_hyperopt(
-                partial(
-                    self._objective_fn_for_hyperopt,
-                    self._X_getter,
-                    self._y,
-                    model_name,
-                    self.log),
-                self._get_search_space(),
-                mongo_exp_key=model_name,
-                store_in_mongo=False,
-                fmin_kwrgs=self.get_fmin_kwargs())
-        model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
-        model.fit(self._X_getter(), self._y)
+        if self.training_method == TrainingMethod.HYPEROPT:
+            self.log.info('Building %s model from scratch using hyper-parameterization', model_name)
+
+            with Timer(f'{model_name} hyper-parameterization', log=self.log):
+                hyperopt_info = utils.run_hyperopt(
+                    partial(
+                        self._objective_fn_for_hyperopt,
+                        self._X_getter,
+                        self._y,
+                        model_name,
+                        self.log),
+                    self._get_search_space(),
+                    mongo_exp_key=model_name,
+                    # store_in_mongo=False,
+                    fmin_kwrgs=self.get_fmin_kwargs())
+                model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
+                model.fit(self._X_getter(), self._y)
+        elif self.training_method == TrainingMethod.GRID_SEARCH_CV:
+            model = self._grid_search_model()
+        else:
+            raise NotImplementedError(f'Training method {self.training_method} not implemented')
         return model
+
+    def _grid_search_model(self):
+        model_name = self.model_name
+        self.log.info('Building %s model from scratch doing a grid-search', model_name)
+
+        clf = GridSearchCV(self.__class__.init_model_object(), self.__class__._param_grid_for_grid_search(), cv=10,
+                           n_jobs=-1, verbose=2, scoring=self.SCORERS, return_train_score=True, refit='f1_micro')
+
+        with Timer(f'{model_name} grid-search', log=self.log):
+            clf.fit(self._X_getter(), self._y)
+
+        utils.write_hyper_parameters(model_name, clf.best_params_)
+        utils.write_grid_search_cv_results(model_name, clf.cv_results_)
+
+        self.log.info('CV results %s', clf.cv_results_)
+        return clf.best_estimator_
+
+    @staticmethod
+    def _param_grid_for_grid_search():
+        raise NotImplementedError('When using grid search, you should define _param_grid_for_grid_search')
 
 
 class BaseUnSupervisedModel(BaseModel):

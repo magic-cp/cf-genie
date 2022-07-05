@@ -13,7 +13,6 @@ from bs4 import BeautifulSoup
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 
-
 PROBLEM_STATEMENT_SELECTOR = '.problem-statement'
 TITLE_SELECTOR = PROBLEM_STATEMENT_SELECTOR + ' .title'
 STATEMENT_SELECTOR = PROBLEM_STATEMENT_SELECTOR + ' .header + div > p'

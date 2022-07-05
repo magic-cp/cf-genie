@@ -18,8 +18,16 @@ TEMP_PATH = os.path.join(PROJECT_DIR, 'temp')
 MODELS_PATH = os.path.join(PROJECT_DIR, 'models')
 HYPER_PARAMETERS_PATH = os.path.join(PROJECT_DIR, 'hyper-parameters')
 TRAIN_RESULTS_PATH = os.path.join(PROJECT_DIR, 'train-results')
+GRID_SEARCH_CV_RESULTS = os.path.join(PROJECT_DIR, 'grid-search-cv-results')
 
-PATHS_TO_ENSURE = [DATASET_PATH, PLOTS_PATH, TEMP_PATH, MODELS_PATH, HYPER_PARAMETERS_PATH, TRAIN_RESULTS_PATH]
+PATHS_TO_ENSURE = [
+    DATASET_PATH,
+    PLOTS_PATH,
+    TEMP_PATH,
+    MODELS_PATH,
+    HYPER_PARAMETERS_PATH,
+    TRAIN_RESULTS_PATH,
+    GRID_SEARCH_CV_RESULTS]
 
 for path in PATHS_TO_ENSURE:
     Path(path).mkdir(parents=True, exist_ok=True)
@@ -96,6 +104,12 @@ def write_hyper_parameters(model_name, hyper_parameters):
     file_name = model_name + '.json'
     with open(file_name, 'w') as f:
         json.dump(hyper_parameters, f, indent=4)
+
+
+@_absolute_file_path(GRID_SEARCH_CV_RESULTS)
+def write_grid_search_cv_results(model_name, grid_search_cv):
+    file_name = model_name + '.csv'
+    pd.DataFrame(grid_search_cv).to_csv(file_name)
 
 
 @_absolute_file_path(TRAIN_RESULTS_PATH)
