@@ -2,10 +2,10 @@ from enum import Enum, auto
 from typing import Type
 
 import numpy as np
-from cf_genie.embedders.base import BaseEmbedder
 
 import cf_genie.logger as logger
 from cf_genie.embedders import EMBEDDERS
+from cf_genie.embedders.base import BaseEmbedder
 from cf_genie.models import BaseSupervisedModel
 from cf_genie.models.base import TrainingMethod
 from cf_genie.utils import Timer
@@ -26,10 +26,12 @@ def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[Ba
 
     return model
 
+
 class RunStrategy(Enum):
     ALL = auto()
     ONE_VS_ALL = auto()
     UNDERSAMPLING = auto()
+
 
 STRATEGY_FUNS = {
     RunStrategy.ALL: all_strategy
@@ -39,4 +41,8 @@ STRATEGY_FUNS = {
 def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray, run_strategy: RunStrategy):
     for embedder in EMBEDDERS:
         with Timer(f'Training {model_class.__name__} on embedder {embedder.__name__}'):
-            STRATEGY_FUNS[run_strategy](model_class, embedder, y)
+            if RunStrategy.ALL == run_strategy:
+                fun = all_strategy
+            else:
+                raise NotImplementedError(run_strategy.__str__())
+            fun(model_class, embedder, y)
