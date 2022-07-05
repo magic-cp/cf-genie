@@ -18,10 +18,12 @@ class KerasClassifierWithOneHotEncoding(KerasClassifier):
     @property
     def target_encoder(self):
         encoder = super().target_encoder
-        # We have to set this value even for binary classification. Otherwise, the target encoder won't use One hot encoding
+        # We have to set this value even for binary classification. Otherwise, the
+        # target encoder won't use One hot encoding
         encoder.loss = 'categorical_crossentropy'
 
         return encoder
+
 
 class LSTM(BaseSupervisedModel):
     @staticmethod
@@ -38,7 +40,13 @@ class LSTM(BaseSupervisedModel):
                         meta['n_features_in_'],
                         1)))
 
-            model.add(layers.Bidirectional(layers.LSTM(params['lstm-layer-1'], name='lstm-layer-1', return_sequences=params['lstm-layer-2'] is not None), name='lstm-layer-1'))
+            model.add(
+                layers.Bidirectional(
+                    layers.LSTM(
+                        params['lstm-layer-1'],
+                        name='lstm-layer-1',
+                        return_sequences=params['lstm-layer-2'] is not None),
+                    name='lstm-layer-1'))
 
             if params['lstm-layer-2'] is not None:
                 model.add(layers.LSTM(params['lstm-layer-2'], name='lstm-layer-2', return_sequences=False))
