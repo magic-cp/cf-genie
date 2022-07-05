@@ -194,7 +194,6 @@ class BaseSupervisedModel(BaseModel):
         write_hyper_parameters(model_name, clf.best_params_)
         write_grid_search_cv_results(model_name, clf.cv_results_)
 
-        self.log.info('CV results %s', clf.cv_results_)
         return clf.best_estimator_
 
     @staticmethod
