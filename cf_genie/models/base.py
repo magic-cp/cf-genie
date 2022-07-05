@@ -10,7 +10,8 @@ from sklearn.model_selection import GridSearchCV, cross_validate
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-from cf_genie.utils import Timer
+from cf_genie.utils import (Timer, write_grid_search_cv_results,
+                            write_hyper_parameters)
 
 
 class TrainingMethod(Enum):
@@ -190,8 +191,8 @@ class BaseSupervisedModel(BaseModel):
         with Timer(f'{model_name} grid-search', log=self.log):
             clf.fit(self._X_getter(), self._y)
 
-        utils.write_hyper_parameters(model_name, clf.best_params_)
-        utils.write_grid_search_cv_results(model_name, clf.cv_results_)
+        write_hyper_parameters(model_name, clf.best_params_)
+        write_grid_search_cv_results(model_name, clf.cv_results_)
 
         self.log.info('CV results %s', clf.cv_results_)
         return clf.best_estimator_
