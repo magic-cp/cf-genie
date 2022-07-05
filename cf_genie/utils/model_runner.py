@@ -33,6 +33,7 @@ def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[Base
             model_class(
                 embedder_class.read_embedded_words,
                 y_tag_group,
+                TrainingMethod.GRID_SEARCH_CV,
                 label=f'with-{embedder_class.__name__}-on-{tag_group}-vs-rest-classes')
 
         with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except {tag_group} data', log=log):
@@ -44,6 +45,7 @@ def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[Base
             model_class(
                 get_x,
                 y[y_not_tag_group],
+                TrainingMethod.GRID_SEARCH_CV,
                 label=f'with-{embedder_class.__name__}-without-{tag_group}-class')
 
 
