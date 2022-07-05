@@ -2,7 +2,6 @@
 Long-short Term Memory (LSTM) model.
 """
 
-import cf_genie.logger as logger
 from typing import Any, Dict
 
 import keras
@@ -11,6 +10,7 @@ from keras import Sequential, layers
 from scikeras.wrappers import KerasClassifier
 from tensorflow import keras
 
+import cf_genie.logger as logger
 from cf_genie.models.base import BaseSupervisedModel
 from cf_genie.utils import get_model_path
 
