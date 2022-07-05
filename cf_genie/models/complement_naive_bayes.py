@@ -16,9 +16,8 @@ from cf_genie.models.base import BaseSupervisedModel
 class ComplementNaiveBayes(BaseSupervisedModel):
     @staticmethod
     def _get_search_space():
-        return {
-            'estimator__alpha': hp.choice('alpha', [0.2, 0.5, 0.8, 1.0, 10, 100, 250, 500, 1000]),
-        }
+        return {param: hp.choice(param, choices)
+                for param, choices in ComplementNaiveBayes._param_grid_for_grid_search().items()}
 
     @property
     def model(self) -> Pipeline:
@@ -35,4 +34,10 @@ class ComplementNaiveBayes(BaseSupervisedModel):
     def get_fmin_kwargs():
         return {
             'max_evals': 15,
+        }
+
+    @staticmethod
+    def _param_grid_for_grid_search():
+        return {
+            'estimator__alpha': [0.2, 0.5, 0.8, 1.0, 10, 100, 250, 500, 1000]
         }

@@ -2,6 +2,7 @@
 Long-short Term Memory (LSTM) model.
 """
 
+import cf_genie.logger as logger
 from typing import Any, Dict
 
 import keras
@@ -25,16 +26,20 @@ class KerasClassifierWithOneHotEncoding(KerasClassifier):
         return encoder
 
 
+log = logger.get_logger(__name__)
+
+
 class LSTM(BaseSupervisedModel):
     @staticmethod
     def init_model_object(**params) -> Sequential:
 
-        def get_clf_model(meta: Dict[str, Any], compile_kwargs: Dict[str, Any]) -> Sequential:
+        def get_clf_model(zero_padding_layer_padding: int, lstm_layer_1_num_nodes: int, lstm_layer_2_num_nodes: int,
+                          dropout: float, meta: Dict[str, Any], compile_kwargs: Dict[str, Any]) -> Sequential:
             model = Sequential(name='LSTM-cf-genie')
 
             model.add(
                 layers.ZeroPadding1D(
-                    padding=params['zero-padding-layer-padding'],
+                    padding=zero_padding_layer_padding,
                     name='zero-padding-layer',
                     input_shape=(
                         meta['n_features_in_'],
@@ -43,13 +48,13 @@ class LSTM(BaseSupervisedModel):
             model.add(
                 layers.Bidirectional(
                     layers.LSTM(
-                        params['lstm-layer-1'],
+                        lstm_layer_1_num_nodes,
                         name='lstm-layer-1',
-                        return_sequences=params['lstm-layer-2'] is not None),
+                        return_sequences=lstm_layer_2_num_nodes is not None),
                     name='lstm-layer-1'))
 
-            if params['lstm-layer-2'] is not None:
-                model.add(layers.LSTM(params['lstm-layer-2'], name='lstm-layer-2', return_sequences=False))
+            if lstm_layer_2_num_nodes is not None:
+                model.add(layers.LSTM(lstm_layer_2_num_nodes, name='lstm-layer-2', return_sequences=False))
 
             if meta['target_type_'] == 'multiclass':
                 n_output_units = meta['n_classes_']
@@ -64,8 +69,8 @@ class LSTM(BaseSupervisedModel):
             else:
                 raise ValueError('Model does not support target type: ' + meta['target_type_'])
 
-            if params['dropout'] > 0:
-                model.add(layers.Dropout(params['dropout'], name='dropout-layer'))
+            if dropout > 0:
+                model.add(layers.Dropout(dropout, name='dropout-layer'))
 
             model.add(layers.Dense(n_output_units, name='output', activation=output_activation))
 
@@ -85,13 +90,9 @@ class LSTM(BaseSupervisedModel):
         return clf
 
     @staticmethod
-    def _get_search_space() -> object:
-        return {
-            'zero-padding-layer-padding': hp.choice('zero-padding-layer-padding', [1, 3, 5, 7]),
-            'lstm-layer-1': hp.choice('lstm-layer-1', [16, 32, 64, 128, 256]),
-            'lstm-layer-2': hp.choice('lstm-layer-2', [None, 8]),
-            'dropout': hp.uniform('dropout', 0, 0.5),
-        }
+    def _get_search_space():
+        return {param: hp.choice(param, choices)
+                for param, choices in LSTM._param_grid_for_grid_search().items()}
 
     @property
     def model(self) -> KerasClassifierWithOneHotEncoding:
@@ -121,3 +122,12 @@ class LSTM(BaseSupervisedModel):
 
     def _save_model_to_disk(self, model) -> Any:
         model.model_.save(self.model_path)
+
+    @staticmethod
+    def _param_grid_for_grid_search():
+        return {
+            'model__zero_padding_layer_padding': [1, 3, 5, 7],
+            'model__lstm_layer_1_num_nodes': [16, 32, 64, 128, 256],
+            'model__lstm_layer_2_num_nodes': [None, 8],
+            'model__dropout': [0, 0.1, 0.2, 0.3, 0.4, 0.5],
+        }

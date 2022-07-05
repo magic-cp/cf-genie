@@ -12,10 +12,9 @@ class RandomForest(BaseSupervisedModel):
         return RandomForestClassifier(**params)
 
     @staticmethod
-    def _get_search_space() -> object:
-        return {
-            'n_estimators': hp.choice('n_estimators', [100, 150, 200, 250, 300, 350, 400, 450, 500]),
-        }
+    def _get_search_space():
+        return {param: hp.choice(param, choices)
+                for param, choices in RandomForest._param_grid_for_grid_search().items()}
 
     @property
     def model(self) -> RandomForestClassifier:
@@ -29,3 +28,9 @@ class RandomForest(BaseSupervisedModel):
 
     def predict(self, X) -> Any:
         return self.model.predict(X)
+
+    @staticmethod
+    def _param_grid_for_grid_search():
+        return {
+            'n_estimators': [100, 150, 200, 250, 300, 350, 400, 450, 500]
+        }
