@@ -27,6 +27,7 @@ class BaseTfidfEmbedder(BaseEmbedder):
             self.log.debug('Model not stored. Building TFIDF model from scratch')
             with Timer(f'Building tf-idf for {ngram}-grams', log=self.log):
                 self.vectorizer: TfidfVectorizer = get_tfidf_vectorizer((ngram, ngram), docs_to_train_embedder)
+            utils.write_model_to_file(self.embedder_name, self.vectorizer)
 
     def embed(self, doc: List[str]):
         return self.vectorizer.transform([' '.join(doc)]).toarray()[0]

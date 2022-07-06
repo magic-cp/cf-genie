@@ -1,3 +1,5 @@
+from collections import Counter
+
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import PCA
@@ -18,7 +20,7 @@ tqdm.pandas()
 
 def main():
     df = read_cleaned_dataset()
-    words = Doc2VecEmbedder200.read_embedded_words()
+    words = TfidfEmbedderUniGram.read_embedded_words()
     kmeans = KMeansClustering(words, k=2)
     log.info('KMeans results: %s', kmeans)
     log.info('Labels of training data: %s', kmeans._model.labels_)
@@ -43,16 +45,23 @@ def main():
     # utils.write_plot(f'pca/pca-plot-{embedder.__name__}-demo.png', plt)
     plt.close()
 
-
-    set().union
     for label in unique_labels:
         label_criteria = labels == label
         tags_set = set()
-        log.info(cleaned_tags.loc[label_criteria])
+        tags_counter = Counter()
         for tags in cleaned_tags.loc[label_criteria]:
             tags_set = tags_set.union(tags)
+            tags_counter.update(tags)
+        tag_groups_set = set()
+        tag_group_counter = Counter()
+        for tag_group in df['most_occurrent_tag_group'].loc[label_criteria]:
+            tag_groups_set.add(tag_group)
+            tag_group_counter.update([tag_group])
         # X_label = points[label_criteria]
         log.info('Tags present in cluster %s : %s', label, tags_set)
+        log.info('Tags counter in cluster %s : %s', label, tags_counter)
+        log.info('Tag groups present in cluster %s : %s', label, tag_groups_set)
+        log.info('Tag groups counter in cluster %s : %s', label, tag_group_counter)
 
     pass
 

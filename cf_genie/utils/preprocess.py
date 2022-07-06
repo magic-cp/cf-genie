@@ -1,3 +1,4 @@
+from enum import Enum, auto
 import re
 import string
 from typing import List
@@ -193,8 +194,11 @@ def remove_latex_dollar_blocks(text: str) -> str:
         i += 1
     return ''.join(ret)
 
+class LatexTokenAction(Enum):
+    REMOVE = auto()
+    KEEP_AND_REMAP = auto()
 
-def preprocess_cf_statement(text: str) -> List[str]:
+def preprocess_cf_statement(text: str, latext_token_action: LatexTokenAction = LatexTokenAction.REMOVE) -> List[str]:
     log.debug('Text input: %s', text)
 
     # Lowercase the entire text
@@ -203,11 +207,11 @@ def preprocess_cf_statement(text: str) -> List[str]:
 
     # Latex \begin and \end removal
     text = remove_latex_begin_end_blocks(text)
-    log.debug('Text after latext begin end removal: %s', text)
+    log.debug('Text after latex begin end removal: %s', text)
 
     # Latex $$$ block removal
     text = remove_latex_dollar_blocks(text)
-    log.debug('Text after latext block removal: %s', text)
+    log.debug('Text after latex block removal: %s', text)
 
     # Word tokenization
     words = word_tokenize(text)

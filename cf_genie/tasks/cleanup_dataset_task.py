@@ -3,6 +3,8 @@ Script to cleanup the dataset. Performs preprocessing over CF statements, and al
 """
 from itertools import groupby
 
+from tqdm import tqdm
+
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 
@@ -11,6 +13,8 @@ logger.setup_applevel_logger(
 
 
 log = logger.get_logger(__name__)
+
+tqdm.pandas()
 
 
 def main():
@@ -30,7 +34,7 @@ def main():
         tag for tag in tags if tag in utils.TAG_GROUP_MAPPER]
 
     # Tags are split by `;`. We can split them with pandas magic
-    df['cleaned_tags'] = df['tags'].apply(lambda tags: ';'.join(remove_invalid_tag(tags.split(';'))))
+    df['cleaned_tags'] = df['tags'].progress_apply(lambda tags: ';'.join(remove_invalid_tag(tags.split(';'))))
     df = df[df['cleaned_tags'] != '']
     log.info('Head of tags: %s', df['tags'].head())
 
@@ -39,10 +43,10 @@ def main():
 
     def map_tags(tags):
         return [utils.TAG_GROUP_MAPPER[tag] for tag in tags]
-    df['tag_groups'] = df['cleaned_tags'].apply(lambda row: map_tags(row.split(';')))
+    df['tag_groups'] = df['cleaned_tags'].progress_apply(lambda row: map_tags(row.split(';')))
 
     # Some problems doesn't map to any tag group, we remove them
-    df = df[df['tag_groups'].apply(lambda r: len(r) != 0)]
+    df = df[df['tag_groups'].progress_apply(lambda r: len(r) != 0)]
 
     # Some statements are empty, so we drop them
     df = df[df['statement'].notna()]
@@ -51,23 +55,23 @@ def main():
     def max_tag(m):
         m = {k: len(list(v)) for k, v in groupby(m)}
         return max(m, key=lambda k: m[k])
-    df['most_occurrent_tag_group'] = df['tag_groups'].apply(
+    df['most_occurrent_tag_group'] = df['tag_groups'].progress_apply(
         lambda r: max_tag(r))
 
     # Preprocess each statement
-    df['preprocessed_statement'] = df['statement'].apply(
+    df['preprocessed_statement'] = df['statement'].progress_apply(
         lambda row: utils.preprocess_cf_statement(row))
 
     # Removing `number` manually from all statements, as it's does'nt really
     # differentiate. We may need to add it later to choose a better primitive. Stuff for later
-    df['preprocessed_statement'] = df['preprocessed_statement'].apply(
+    df['preprocessed_statement'] = df['preprocessed_statement'].progress_apply(
         lambda row: list(filter(lambda x: x != 'number', row)))
 
     # Converting as a string separated by ' '
-    df['preprocessed_statement'] = df['preprocessed_statement'].apply(lambda row: ' '.join(row))
+    df['preprocessed_statement'] = df['preprocessed_statement'].progress_apply(lambda row: ' '.join(row))
 
     # Same for the tag groups
-    df['tag_groups'] = df['tag_groups'].apply(lambda row: ' '.join(row))
+    df['tag_groups'] = df['tag_groups'].progress_apply(lambda row: ' '.join(row))
 
     log.info('Dataset after cleaning and preprocessing:')
     log.info(df.head())
