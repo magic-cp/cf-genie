@@ -110,7 +110,6 @@ class LSTM(BaseSupervisedModel):
             optimizer__learning_rate=0.001,
             callbacks=[early_stopping, csv_logger]
         )
-        clf.fit()
         return clf
 
     @staticmethod
