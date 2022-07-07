@@ -2,7 +2,7 @@
 Long-short Term Memory (LSTM) model.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import keras
 from hyperopt import hp
@@ -34,7 +34,7 @@ class LSTM(BaseSupervisedModel):
     def init_model_object(**params) -> Sequential:
 
         def get_clf_model(zero_padding_layer_padding: int, lstm_layer_1_num_nodes: int, lstm_layer_2_num_nodes: int,
-                          dropout: float, meta: Dict[str, Any], compile_kwargs: Dict[str, Any]) -> Sequential:
+                          dropout: float, extra_hidden_layer_num_nodes: Optional[int], meta: Dict[str, Any], compile_kwargs: Dict[str, Any]) -> Sequential:
             model = Sequential(name='LSTM-cf-genie')
 
             model.add(
@@ -72,6 +72,9 @@ class LSTM(BaseSupervisedModel):
             if dropout > 0:
                 model.add(layers.Dropout(dropout, name='dropout-layer'))
 
+            if extra_hidden_layer_num_nodes:
+                model.add(layers.Dense(extra_hidden_layer_num_nodes, name='extra-hidden', activation='relu'))
+
             model.add(layers.Dense(n_output_units, name='output', activation=output_activation))
 
             model.compile(loss=loss, metrics=metrics, optimizer=compile_kwargs['optimizer'])
@@ -81,8 +84,8 @@ class LSTM(BaseSupervisedModel):
 
         clf = KerasClassifierWithOneHotEncoding(
             model=get_clf_model,
-            epochs=40,
-            batch_size=500,
+            epochs=35,
+            batch_size=750,
             verbose=1,
             optimizer='adam',
             optimizer__learning_rate=0.001,
@@ -129,5 +132,6 @@ class LSTM(BaseSupervisedModel):
             'model__zero_padding_layer_padding': [1, 3, 5, 7],
             'model__lstm_layer_1_num_nodes': [16, 32, 64, 128, 256],
             'model__lstm_layer_2_num_nodes': [None, 8],
+            'model__extra_hidden_layer_num_nodes': [None, 4, 8, 16, 32],
             'model__dropout': [0, 0.1, 0.2, 0.3, 0.4, 0.5],
         }
