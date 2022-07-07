@@ -53,16 +53,19 @@ def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[Base
 class RunStrategy(Enum):
     ALL = auto()
     ONE_VS_ALL = auto()
-    UNDERSAMPLING = auto()
+    # UNDERSAMPLING = auto()
 
 
 def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray, run_strategy: RunStrategy):
+    """
+    Run a model in all possible embedders
+    """
+    if RunStrategy.ALL == run_strategy:
+        fun = all_strategy
+    elif RunStrategy.ONE_VS_ALL == run_strategy:
+        fun = one_vs_all
+    else:
+        raise NotImplementedError(run_strategy.__str__())
     for embedder in EMBEDDERS:
         with Timer(f'Training {model_class.__name__} on embedder {embedder.__name__}'):
-            if RunStrategy.ALL == run_strategy:
-                fun = all_strategy
-            elif RunStrategy.ONE_VS_ALL == run_strategy:
-                fun = one_vs_all
-            else:
-                raise NotImplementedError(run_strategy.__str__())
             fun(model_class, embedder, y)
