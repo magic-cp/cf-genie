@@ -186,7 +186,7 @@ class BaseSupervisedModel(BaseModel):
         model_name = self.model_name
         self.log.info('Building %s model from scratch doing a grid-search', model_name)
 
-        clf = GridSearchCV(self.init_model_object(), self.__class__._param_grid_for_grid_search(), cv=10,
+        clf = GridSearchCV(self.init_model_object(), self.__class__._param_grid_for_grid_search(), cv=6,
                            n_jobs=-1, verbose=4, scoring=self.SCORERS, return_train_score=True, refit='f1_micro')
 
         with Timer(f'{model_name} grid-search', log=self.log):

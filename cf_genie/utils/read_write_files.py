@@ -19,6 +19,7 @@ MODELS_PATH = os.path.join(PROJECT_DIR, 'models')
 HYPER_PARAMETERS_PATH = os.path.join(PROJECT_DIR, 'hyper-parameters')
 TRAIN_RESULTS_PATH = os.path.join(PROJECT_DIR, 'train-results')
 GRID_SEARCH_CV_RESULTS = os.path.join(PROJECT_DIR, 'grid-search-cv-results')
+LSTM_HISTORY = os.path.join(PROJECT_DIR, 'lstm-history')
 
 PATHS_TO_ENSURE = [
     DATASET_PATH,
@@ -27,7 +28,8 @@ PATHS_TO_ENSURE = [
     MODELS_PATH,
     HYPER_PARAMETERS_PATH,
     TRAIN_RESULTS_PATH,
-    GRID_SEARCH_CV_RESULTS]
+    GRID_SEARCH_CV_RESULTS,
+    LSTM_HISTORY]
 
 for path in PATHS_TO_ENSURE:
     Path(path).mkdir(parents=True, exist_ok=True)
@@ -101,6 +103,13 @@ def get_model_path(model_name):
 
 @_absolute_file_path(HYPER_PARAMETERS_PATH)
 def write_hyper_parameters(model_name, hyper_parameters):
+    file_name = model_name + '.json'
+    with open(file_name, 'w') as f:
+        json.dump(hyper_parameters, f, indent=4)
+
+
+@_absolute_file_path(LSTM_HISTORY)
+def write_lstm_history(model_name, hyper_parameters):
     file_name = model_name + '.json'
     with open(file_name, 'w') as f:
         json.dump(hyper_parameters, f, indent=4)

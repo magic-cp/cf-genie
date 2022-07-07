@@ -6,11 +6,12 @@ from typing import Any, Dict, Optional
 
 import keras
 from hyperopt import hp
-from keras import Sequential, layers, callbacks
+from keras import Sequential, callbacks, layers
 from scikeras.wrappers import KerasClassifier
 from tensorflow import keras
 
 import cf_genie.logger as logger
+import cf_genie.utils as utils
 from cf_genie.models.base import BaseSupervisedModel
 from cf_genie.utils import get_model_path
 
@@ -33,8 +34,15 @@ class LSTM(BaseSupervisedModel):
     # @staticmethod
     def init_model_object(self, **params) -> Sequential:
 
-        def get_clf_model(zero_padding_layer_padding: int, lstm_layer_1_num_nodes: int, lstm_layer_2_num_nodes: int,
-                          dropout: float, extra_hidden_layer_num_nodes: Optional[int], meta: Dict[str, Any], compile_kwargs: Dict[str, Any]) -> Sequential:
+        def get_clf_model(zero_padding_layer_padding: int,
+                          lstm_layer_1_num_nodes: int,
+                          lstm_layer_2_num_nodes: int,
+                          dropout: float,
+                          extra_hidden_layer_num_nodes: Optional[int],
+                          meta: Dict[str,
+                                     Any],
+                          compile_kwargs: Dict[str,
+                                               Any]) -> Sequential:
             model = Sequential(name='LSTM-cf-genie')
 
             model.add(
@@ -84,6 +92,8 @@ class LSTM(BaseSupervisedModel):
 
         early_stopping = callbacks.EarlyStopping(patience=2, monitor='loss')
 
+        csv_logger = callbacks.CSVLogger(self.model_name, append=True)
+
         clf = KerasClassifierWithOneHotEncoding(
             model=get_clf_model,
             epochs=50,
@@ -91,7 +101,7 @@ class LSTM(BaseSupervisedModel):
             verbose=1,
             optimizer='adam',
             optimizer__learning_rate=0.001,
-            callbacks=[early_stopping]
+            callbacks=[early_stopping, csv_logger]
         )
         return clf
 
@@ -128,13 +138,15 @@ class LSTM(BaseSupervisedModel):
 
     def _save_model_to_disk(self, model) -> Any:
         model.model_.save(self.model_path)
+        utils.write_lstm_history(self.model_name, self.model_.history.history)
+        self.log.info('HISTORY: %s', model.model_.history.history)
 
     @staticmethod
     def _param_grid_for_grid_search():
         return {
-            'model__zero_padding_layer_padding': [1, 3, 5, 7],
-            'model__lstm_layer_1_num_nodes': [16, 32, 64, 128, 256],
-            'model__lstm_layer_2_num_nodes': [None, 8],
-            'model__extra_hidden_layer_num_nodes': [None, 4, 8, 16, 32],
-            'model__dropout': [0, 0.1, 0.2, 0.3, 0.4, 0.5],
+            'model__zero_padding_layer_padding': [1, 3, 5],
+            'model__lstm_layer_1_num_nodes': [16, 32, 64],
+            'model__lstm_layer_2_num_nodes': [None, 8, 16],
+            'model__extra_hidden_layer_num_nodes': [None, 8, 16, 32],
+            'model__dropout': [0, 0.2, 0.4, 0.5],
         }

@@ -19,6 +19,7 @@ from cf_genie.utils.read_write_files import (TEMP_PATH, get_model_path,
                                              write_cleaned_dataframe_to_csv,
                                              write_grid_search_cv_results,
                                              write_hyper_parameters,
+                                             write_lstm_history,
                                              write_model_to_file,
                                              write_numpy_array, write_plot)
 from cf_genie.utils.timer import Timer
