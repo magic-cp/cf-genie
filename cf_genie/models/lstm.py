@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 import keras
 from hyperopt import hp
 from keras import Sequential, callbacks, layers
+from keras import backend
 from scikeras.wrappers import KerasClassifier
 from tensorflow import keras
 
@@ -25,6 +26,10 @@ class KerasClassifierWithOneHotEncoding(KerasClassifier):
         encoder.loss = 'categorical_crossentropy'
 
         return encoder
+
+    def fit(self, *args, **kwargs):
+        backend.clear_session() # to avoid high memory usage
+        super().fit(*args, *kwargs)
 
 
 log = logger.get_logger(__name__)
@@ -105,6 +110,7 @@ class LSTM(BaseSupervisedModel):
             optimizer__learning_rate=0.001,
             callbacks=[early_stopping, csv_logger]
         )
+        clf.fit()
         return clf
 
     @staticmethod
@@ -140,7 +146,7 @@ class LSTM(BaseSupervisedModel):
 
     def _save_model_to_disk(self, model) -> Any:
         model.model_.save(self.model_path)
-        utils.write_lstm_history(self.model_name, self.model_.history.history)
+        utils.write_lstm_history(self.model_name, model.model_.history.history)
         self.log.info('HISTORY: %s', model.model_.history.history)
 
     @staticmethod
