@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Type
+from typing import List, Type
 
 import numpy as np
 
@@ -64,7 +64,7 @@ class RunStrategy(Enum):
     # UNDERSAMPLING = auto()
 
 
-def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray, run_strategy: RunStrategy):
+def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray, run_strategy: RunStrategy, embedders: List[Type[BaseEmbedder]] = EMBEDDERS):
     """
     Run a model in all possible embedders
     """
@@ -74,5 +74,5 @@ def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray, run_strateg
         fun = one_vs_all
     else:
         raise NotImplementedError(run_strategy.__str__())
-    for embedder in EMBEDDERS:
+    for embedder in embedders:
         fun(model_class, embedder, y)
