@@ -23,7 +23,7 @@ def wrap_model_class_for_exception_handling(model_class: Type[BaseSupervisedMode
 
 
 def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[BaseEmbedder], y: np.ndarray):
-    with Timer(f'Training {model_class.__name__} on embedder {embedder_class.__name__}'):
+    with Timer(f'Training {model_class.__name__} on embedder {embedder_class.__name__}', log=log):
 
         wrap_model_class_for_exception_handling(model_class, embedder_class.read_embedded_words,
                               y,
@@ -75,5 +75,4 @@ def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray, run_strateg
     else:
         raise NotImplementedError(run_strategy.__str__())
     for embedder in EMBEDDERS:
-        with Timer(f'Training {model_class.__name__} on embedder {embedder.__name__}'):
-            fun(model_class, embedder, y)
+        fun(model_class, embedder, y)

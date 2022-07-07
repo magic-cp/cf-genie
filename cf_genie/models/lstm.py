@@ -77,6 +77,8 @@ class LSTM(BaseSupervisedModel):
             else:
                 raise ValueError('Model does not support target type: ' + meta['target_type_'])
 
+            metrics.append('mean_squared_error')
+
             if dropout > 0:
                 model.add(layers.Dropout(dropout, name='dropout-layer'))
 
@@ -87,7 +89,7 @@ class LSTM(BaseSupervisedModel):
 
             model.compile(loss=loss, metrics=metrics, optimizer=compile_kwargs['optimizer'])
 
-            model.summary()
+            # model.summary()
             return model
 
         early_stopping = callbacks.EarlyStopping(patience=2, monitor='loss')
@@ -98,7 +100,7 @@ class LSTM(BaseSupervisedModel):
             model=get_clf_model,
             epochs=50,
             batch_size=750,
-            verbose=1,
+            verbose=0,
             optimizer='adam',
             optimizer__learning_rate=0.001,
             callbacks=[early_stopping, csv_logger]
@@ -144,9 +146,9 @@ class LSTM(BaseSupervisedModel):
     @staticmethod
     def _param_grid_for_grid_search():
         return {
-            'model__zero_padding_layer_padding': [1, 3, 5],
+            'model__zero_padding_layer_padding': [1, 3],
             'model__lstm_layer_1_num_nodes': [16, 32, 64],
-            'model__lstm_layer_2_num_nodes': [None, 8, 16],
-            'model__extra_hidden_layer_num_nodes': [None, 8, 16, 32],
-            'model__dropout': [0, 0.2, 0.4, 0.5],
+            'model__lstm_layer_2_num_nodes': [None, 8],
+            'model__extra_hidden_layer_num_nodes': [None, 16, 32],
+            'model__dropout': [0, 0.25, 0.5],
         }
