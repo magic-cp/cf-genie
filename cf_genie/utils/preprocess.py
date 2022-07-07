@@ -1,6 +1,6 @@
-from enum import Enum, auto
 import re
 import string
+from enum import Enum, auto
 from typing import List
 
 import nltk
@@ -194,9 +194,11 @@ def remove_latex_dollar_blocks(text: str) -> str:
         i += 1
     return ''.join(ret)
 
+
 class LatexTokenAction(Enum):
     REMOVE = auto()
     KEEP_AND_REMAP = auto()
+
 
 def preprocess_cf_statement(text: str, latext_token_action: LatexTokenAction = LatexTokenAction.REMOVE) -> List[str]:
     log.debug('Text input: %s', text)

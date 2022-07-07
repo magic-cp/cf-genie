@@ -1,3 +1,4 @@
+import datetime
 import time
 
 import cf_genie.logger as logger
@@ -24,4 +25,4 @@ class Timer(logger.Loggable):
         self.duration = self.end_time - self.start_time
 
         self.log.info("Finishing: %s", self.action_name)
-        self.log.info("Done in %.2f seconds.", self.duration)
+        self.log.info("Done in %s seconds.", datetime.timedelta(seconds=self.duration))
