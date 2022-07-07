@@ -1,5 +1,11 @@
 import argparse
 import importlib
+
+# isort: off
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2" # disable tensorflow logging
+# isort: on
+
 from types import ModuleType
 
 import cf_genie.logger as logger
