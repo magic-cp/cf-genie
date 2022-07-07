@@ -11,6 +11,7 @@ from sklearn.model_selection import GridSearchCV, cross_validate
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 from cf_genie.utils import Timer
+from cf_genie.utils.exceptions import ModelTrainingException
 from cf_genie.utils.read_write_files import (write_grid_search_cv_results,
                                              write_hyper_parameters)
 
@@ -153,6 +154,9 @@ class BaseSupervisedModel(BaseModel):
             self.log.info('Model %s not stored', self.model_name)
             model = self._train_if_not_in_disk()
             self._save_model_to_disk(model)
+
+        except Exception:
+            raise ModelTrainingException(self.model_name)
 
         self._model = model
 
