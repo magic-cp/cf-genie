@@ -34,7 +34,7 @@ EMBEDDERS: List[Type[BaseEmbedder]] = [
     FastTextEmbedder200,
 
     # tf-idf variations
-    TfidfEmbedderUniGram,
+    # TfidfEmbedderUniGram,
     # TfidfEmbedderBiGram,
     # TfidfEmbedderTriGram
 ]
