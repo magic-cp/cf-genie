@@ -23,8 +23,8 @@ class ComplementNaiveBayes(BaseSupervisedModel):
     def model(self) -> Pipeline:
         return self._model
 
-    @staticmethod
-    def init_model_object(**params) -> object:
+    # @staticmethod
+    def init_model_object(self, **params) -> object:
         return Pipeline([('scaler', MinMaxScaler()), ('estimator', ComplementNB())]).set_params(**params)
 
     def predict(self, doc) -> List[str]:

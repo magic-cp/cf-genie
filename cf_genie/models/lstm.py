@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 
 import keras
 from hyperopt import hp
-from keras import Sequential, layers
+from keras import Sequential, layers, callbacks
 from scikeras.wrappers import KerasClassifier
 from tensorflow import keras
 
@@ -30,8 +30,8 @@ log = logger.get_logger(__name__)
 
 
 class LSTM(BaseSupervisedModel):
-    @staticmethod
-    def init_model_object(**params) -> Sequential:
+    # @staticmethod
+    def init_model_object(self, **params) -> Sequential:
 
         def get_clf_model(zero_padding_layer_padding: int, lstm_layer_1_num_nodes: int, lstm_layer_2_num_nodes: int,
                           dropout: float, extra_hidden_layer_num_nodes: Optional[int], meta: Dict[str, Any], compile_kwargs: Dict[str, Any]) -> Sequential:
@@ -82,13 +82,16 @@ class LSTM(BaseSupervisedModel):
             model.summary()
             return model
 
+        early_stopping = callbacks.EarlyStopping(patience=2, monitor='loss')
+
         clf = KerasClassifierWithOneHotEncoding(
             model=get_clf_model,
-            epochs=35,
+            epochs=50,
             batch_size=750,
             verbose=1,
             optimizer='adam',
             optimizer__learning_rate=0.001,
+            callbacks=[early_stopping]
         )
         return clf
 

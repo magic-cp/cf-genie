@@ -7,8 +7,8 @@ from cf_genie.models.base import BaseSupervisedModel
 
 
 class RandomForest(BaseSupervisedModel):
-    @staticmethod
-    def init_model_object(**params) -> object:
+    # @staticmethod
+    def init_model_object(self, **params) -> object:
         return RandomForestClassifier(**params)
 
     @staticmethod

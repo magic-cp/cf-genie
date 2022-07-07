@@ -81,8 +81,8 @@ class BaseSupervisedModel(BaseModel):
         self.training_method = training_method
         super().__init__(label)
 
-    @staticmethod
-    def init_model_object(**params) -> object:
+    # @staticmethod
+    def init_model_object(self, **params) -> object:
         raise NotImplementedError("Subclasses of BaseSupervisedModel should implement `init_model_object`")
 
     @staticmethod
@@ -186,8 +186,8 @@ class BaseSupervisedModel(BaseModel):
         model_name = self.model_name
         self.log.info('Building %s model from scratch doing a grid-search', model_name)
 
-        clf = GridSearchCV(self.__class__.init_model_object(), self.__class__._param_grid_for_grid_search(), cv=10,
-                           n_jobs=-1, verbose=1, scoring=self.SCORERS, return_train_score=True, refit='f1_micro')
+        clf = GridSearchCV(self.init_model_object(), self.__class__._param_grid_for_grid_search(), cv=10,
+                           n_jobs=-1, verbose=4, scoring=self.SCORERS, return_train_score=True, refit='f1_micro')
 
         with Timer(f'{model_name} grid-search', log=self.log):
             clf.fit(self._X_getter(), self._y)
