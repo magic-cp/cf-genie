@@ -15,8 +15,7 @@ def get_result_path_for_all_classes(model: Type[BaseSupervisedModel]):
     return f'grid-search-cv-results/{model.model_name}.csv'
 
 
-def get_pandas_df_for_all_classes(model, embedder) -> pd.DataFrame:
-    scores = ['f1_micro', 'f1_macro', 'f1_weighted', 'hamming_score']
+def get_pandas_df_for_all_classes(model, embedder, scores = ['f1_micro', 'f1_macro', 'f1_weighted', 'hamming_score']) -> pd.DataFrame:
     score_columns = []
     for score in scores:
         score_columns.append('rank_test_' + score)
@@ -40,7 +39,7 @@ def get_pandas_df_for_all_classes(model, embedder) -> pd.DataFrame:
     return df
 
 
-def get_acc_pandas_df_for_model_all_classes(model_class: Type[BaseSupervisedModel]) -> pd.DataFrame:
+def get_acc_pandas_df_for_model_all_classes(model_class: Type[BaseSupervisedModel], scores = ['f1_micro', 'f1_macro', 'f1_weighted', 'hamming_score']) -> pd.DataFrame:
     dfs = []
     y = utils.read_cleaned_dataset()['most_occurrent_tag_group'].to_numpy()
     for embedder in EMBEDDERS:
@@ -51,7 +50,7 @@ def get_acc_pandas_df_for_model_all_classes(model_class: Type[BaseSupervisedMode
                     y,
                     TrainingMethod.GRID_SEARCH_CV,
                     label=get_model_suffix_name_for_all_classes(embedder)),
-                embedder)
+                embedder, scores)
             dfs.append(df)
         except Exception as e:
             print(embedder + ' not trained to model_class ' + model_class)
