@@ -14,6 +14,18 @@ from cf_genie.utils.exceptions import ModelTrainingException
 log = logger.get_logger(__name__)
 
 
+def get_model_suffix_name_for_all_classes(embedder_class: Type[BaseEmbedder]):
+    return f'with-{embedder_class.__name__}-on-all-classes'
+
+
+def get_model_suffix_name_for_tag_vs_rest(embedder_class: Type[BaseEmbedder], tag_group: str):
+    return f'with-{embedder_class.__name__}-on-{tag_group}-vs-rest-classes'
+
+
+def get_model_suffix_name_without_tag(embedder_class: Type[BaseEmbedder], tag_group: str):
+    return f'with-{embedder_class.__name__}-without-{tag_group}-class'
+
+
 def wrap_model_class_for_exception_handling(model_class: Type[BaseSupervisedModel], *args, **kwargs):
     try:
         return model_class(*args, **kwargs)
@@ -28,9 +40,7 @@ def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[Ba
         wrap_model_class_for_exception_handling(model_class, embedder_class.read_embedded_words,
                                                 y,
                                                 TrainingMethod.GRID_SEARCH_CV,
-                                                label='with-' +
-                                                embedder_class.__name__ +
-                                                '-on-all-classes')
+                                                label=get_model_suffix_name_for_all_classes(embedder_class))
 
 
 def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[BaseEmbedder], y: np.ndarray):
@@ -44,7 +54,7 @@ def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[Base
                 embedder_class.read_embedded_words,
                 y_tag_group,
                 TrainingMethod.GRID_SEARCH_CV,
-                label=f'with-{embedder_class.__name__}-on-{tag_group}-vs-rest-classes')
+                label=get_model_suffix_name_for_tag_vs_rest(embedder_class, tag_group))
 
         with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except {tag_group} data', log=log):
             y_not_tag_group = y != tag_group
@@ -56,7 +66,7 @@ def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[Base
                                                     get_x,
                                                     y[y_not_tag_group],
                                                     TrainingMethod.GRID_SEARCH_CV,
-                                                    label=f'with-{embedder_class.__name__}-without-{tag_group}-class')
+                                                    label=get_model_suffix_name_without_tag(embedder_class, tag_group))
 
 
 class RunStrategy(Enum):

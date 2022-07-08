@@ -1,8 +1,9 @@
-from cf_genie.utils import Timer
-import cf_genie.logger as logger
-from types import ModuleType
 import argparse
 import importlib
+from types import ModuleType
+
+import cf_genie.logger as logger
+from cf_genie.utils import Timer
 
 # isort: off
 import os
