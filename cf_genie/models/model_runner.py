@@ -26,11 +26,11 @@ def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[Ba
     with Timer(f'Training {model_class.__name__} on embedder {embedder_class.__name__}', log=log):
 
         wrap_model_class_for_exception_handling(model_class, embedder_class.read_embedded_words,
-                              y,
-                              TrainingMethod.GRID_SEARCH_CV,
-                              label='with-' +
-                              embedder_class.__name__ +
-                              '-on-all-classes')
+                                                y,
+                                                TrainingMethod.GRID_SEARCH_CV,
+                                                label='with-' +
+                                                embedder_class.__name__ +
+                                                '-on-all-classes')
 
 
 def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[BaseEmbedder], y: np.ndarray):
@@ -39,11 +39,12 @@ def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[Base
         y_tag_group = np.vectorize(lambda x: tag_group if x == tag_group else non_tag_group)(y)
         log.info(np.unique(y_tag_group))
         with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on tag group {tag_group} vs others', log=log):
-            wrap_model_class_for_exception_handling(model_class,
-                                  embedder_class.read_embedded_words,
-                                  y_tag_group,
-                                  TrainingMethod.GRID_SEARCH_CV,
-                                  label=f'with-{embedder_class.__name__}-on-{tag_group}-vs-rest-classes')
+            wrap_model_class_for_exception_handling(
+                model_class,
+                embedder_class.read_embedded_words,
+                y_tag_group,
+                TrainingMethod.GRID_SEARCH_CV,
+                label=f'with-{embedder_class.__name__}-on-{tag_group}-vs-rest-classes')
 
         with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except {tag_group} data', log=log):
             y_not_tag_group = y != tag_group
@@ -52,10 +53,10 @@ def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[Base
                 X = embedder_class.read_embedded_words()
                 return X[y_not_tag_group]
             wrap_model_class_for_exception_handling(model_class,
-                                  get_x,
-                                  y[y_not_tag_group],
-                                  TrainingMethod.GRID_SEARCH_CV,
-                                  label=f'with-{embedder_class.__name__}-without-{tag_group}-class')
+                                                    get_x,
+                                                    y[y_not_tag_group],
+                                                    TrainingMethod.GRID_SEARCH_CV,
+                                                    label=f'with-{embedder_class.__name__}-without-{tag_group}-class')
 
 
 class RunStrategy(Enum):
@@ -64,7 +65,8 @@ class RunStrategy(Enum):
     # UNDERSAMPLING = auto()
 
 
-def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray, run_strategy: RunStrategy, embedders: List[Type[BaseEmbedder]] = EMBEDDERS):
+def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray,
+              run_strategy: RunStrategy, embedders: List[Type[BaseEmbedder]] = EMBEDDERS):
     """
     Run a model in all possible embedders
     """

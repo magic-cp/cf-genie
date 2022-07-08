@@ -6,8 +6,7 @@ from typing import Any, Dict, Optional
 
 import keras
 from hyperopt import hp
-from keras import Sequential, callbacks, layers
-from keras import backend
+from keras import Sequential, backend, callbacks, layers
 from scikeras.wrappers import KerasClassifier
 from tensorflow import keras
 
@@ -28,7 +27,7 @@ class KerasClassifierWithOneHotEncoding(KerasClassifier):
         return encoder
 
     def fit(self, *args, **kwargs):
-        backend.clear_session() # to avoid high memory usage
+        backend.clear_session()  # to avoid high memory usage
         super().fit(*args, *kwargs)
 
 

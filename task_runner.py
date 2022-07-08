@@ -1,15 +1,13 @@
+from cf_genie.utils import Timer
+import cf_genie.logger as logger
+from types import ModuleType
 import argparse
 import importlib
 
 # isort: off
 import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2" # disable tensorflow logging
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tensorflow logging
 # isort: on
-
-from types import ModuleType
-
-import cf_genie.logger as logger
-from cf_genie.utils import Timer
 
 
 def get_task_module(task):
