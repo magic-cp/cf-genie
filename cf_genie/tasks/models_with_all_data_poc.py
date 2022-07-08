@@ -9,7 +9,7 @@ import cf_genie.utils as utils
 from cf_genie.embedders import EMBEDDERS
 from cf_genie.models import SUPERVISED_MODELS, TrainingMethod
 from cf_genie.models.base import BaseModel
-from cf_genie.utils.model_runner import RunStrategy, run_model
+from cf_genie.models.model_runner import RunStrategy, run_model
 from cf_genie.utils.timer import Timer
 
 logger.setup_applevel_logger(
