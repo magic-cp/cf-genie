@@ -32,9 +32,6 @@ class TrainingMethod(Enum):
     """
 
 
-def hamming_score(*args, **kwargs):
-    return 1 - hamming_loss(*args, **kwargs)
-
 
 class BaseModel(logger.Loggable):
     """
