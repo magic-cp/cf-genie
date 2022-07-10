@@ -43,7 +43,11 @@ def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[Ba
                                                 label=get_model_suffix_name_for_all_classes(embedder_class))
 
 
-def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[BaseEmbedder], y: np.ndarray, callback=None):
+def one_vs_all(
+        model_class: Type[BaseSupervisedModel],
+        embedder_class: Type[BaseEmbedder],
+        y: np.ndarray,
+        callback=None):
     for tag_group in np.unique(y):
         non_tag_group = f'NON_{tag_group}'
         y_tag_group = np.vectorize(lambda x: tag_group if x == tag_group else non_tag_group)(y)
@@ -72,6 +76,7 @@ def one_vs_all(model_class: Type[BaseSupervisedModel], embedder_class: Type[Base
 
         if callback:
             callback()
+
 
 class RunStrategy(Enum):
     ALL = auto()

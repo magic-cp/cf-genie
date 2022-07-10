@@ -15,7 +15,14 @@ def get_result_path_for_all_classes(model: Type[BaseSupervisedModel]):
     return f'grid-search-cv-results/{model.model_name}.csv'
 
 
-def get_pandas_df_for_all_classes(model, embedder, scores = ['f1_micro', 'f1_macro', 'f1_weighted', 'hamming_score']) -> pd.DataFrame:
+def get_pandas_df_for_all_classes(
+    model,
+    embedder,
+    scores=[
+        'f1_micro',
+        'f1_macro',
+        'f1_weighted',
+        'hamming_score']) -> pd.DataFrame:
     score_columns = []
     for score in scores:
         score_columns.append('rank_test_' + score)
@@ -39,7 +46,13 @@ def get_pandas_df_for_all_classes(model, embedder, scores = ['f1_micro', 'f1_mac
     return df
 
 
-def get_acc_pandas_df_for_model_all_classes(model_class: Type[BaseSupervisedModel], scores = ['f1_micro', 'f1_macro', 'f1_weighted', 'hamming_score']) -> pd.DataFrame:
+def get_acc_pandas_df_for_model_all_classes(
+    model_class: Type[BaseSupervisedModel],
+    scores=[
+        'f1_micro',
+        'f1_macro',
+        'f1_weighted',
+        'hamming_score']) -> pd.DataFrame:
     dfs = []
     y = utils.read_cleaned_dataset()['most_occurrent_tag_group'].to_numpy()
     for embedder in EMBEDDERS:
