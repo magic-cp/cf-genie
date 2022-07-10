@@ -3,11 +3,13 @@ from typing import Any
 from hyperopt import hp
 from sklearn.ensemble import RandomForestClassifier
 
-from cf_genie.models.base import BaseSupervisedModel
+from cf_genie.models.base import BaseSupervisedModel, TrainingMethod
 
 
 class RandomForest(BaseSupervisedModel):
+    TRAINING_METHOD = TrainingMethod.GRID_SEARCH_CV
     # @staticmethod
+
     def init_model_object(self, **params) -> object:
         return RandomForestClassifier(**params)
 

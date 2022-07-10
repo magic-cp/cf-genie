@@ -12,7 +12,7 @@ from tensorflow import keras
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-from cf_genie.models.base import BaseSupervisedModel
+from cf_genie.models.base import BaseSupervisedModel, TrainingMethod
 from cf_genie.utils import get_model_path
 
 
@@ -35,7 +35,9 @@ log = logger.get_logger(__name__)
 
 
 class LSTM(BaseSupervisedModel):
+    TRAINING_METHOD = TrainingMethod.GRID_SEARCH_CV
     # @staticmethod
+
     def init_model_object(self, **params) -> Sequential:
 
         def get_clf_model(zero_padding_layer_padding: int,

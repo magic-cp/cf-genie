@@ -5,7 +5,6 @@ import pandas as pd
 from cf_genie import utils
 from cf_genie.embedders import EMBEDDERS, BaseEmbedder
 from cf_genie.models import BaseSupervisedModel
-from cf_genie.models.base import TrainingMethod
 from cf_genie.models.model_runner import (
     get_model_suffix_name_for_all_classes,
     get_model_suffix_name_for_tag_vs_rest, get_model_suffix_name_without_tag)
@@ -61,7 +60,6 @@ def get_acc_pandas_df_for_model_all_classes(
                 model_class(
                     embedder.read_embedded_words,
                     y,
-                    TrainingMethod.GRID_SEARCH_CV,
                     label=get_model_suffix_name_for_all_classes(embedder)),
                 embedder, scores)
             dfs.append(df)

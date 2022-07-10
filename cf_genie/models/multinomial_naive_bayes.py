@@ -11,10 +11,12 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler
 
-from cf_genie.models.base import BaseSupervisedModel
+from cf_genie.models.base import BaseSupervisedModel, TrainingMethod
 
 
 class MultinomialNaiveBayes(BaseSupervisedModel):
+    TRAINING_METHOD = TrainingMethod.GRID_SEARCH_CV
+
     @staticmethod
     def _get_search_space():
         return {param: hp.choice(param, choices)

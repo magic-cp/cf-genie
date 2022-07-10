@@ -39,7 +39,6 @@ def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[Ba
 
         wrap_model_class_for_exception_handling(model_class, embedder_class.read_embedded_words,
                                                 y,
-                                                TrainingMethod.GRID_SEARCH_CV,
                                                 label=get_model_suffix_name_for_all_classes(embedder_class))
 
 
@@ -57,7 +56,6 @@ def one_vs_all(
                 model_class,
                 embedder_class.read_embedded_words,
                 y_tag_group,
-                TrainingMethod.GRID_SEARCH_CV,
                 label=get_model_suffix_name_for_tag_vs_rest(embedder_class, tag_group))
         if callback:
             callback()
@@ -71,7 +69,6 @@ def one_vs_all(
             wrap_model_class_for_exception_handling(model_class,
                                                     get_x,
                                                     y[y_not_tag_group],
-                                                    TrainingMethod.GRID_SEARCH_CV,
                                                     label=get_model_suffix_name_without_tag(embedder_class, tag_group))
 
         if callback:

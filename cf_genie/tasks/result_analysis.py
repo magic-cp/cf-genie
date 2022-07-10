@@ -1,6 +1,8 @@
 from itertools import product
 
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
+import matplotlib.pyplot as plt
+from sklearn.metrics import (ConfusionMatrixDisplay, classification_report,
+                             confusion_matrix)
 
 import cf_genie.logger as logger
 from cf_genie import utils
@@ -9,7 +11,6 @@ from cf_genie.models import SUPERVISED_MODELS, TrainingMethod
 from cf_genie.models.model_analyisis import \
     get_acc_pandas_df_for_model_all_classes
 from cf_genie.models.model_runner import get_model_suffix_name_for_all_classes
-import matplotlib.pyplot as plt
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -25,7 +26,6 @@ def main():
         model = model_class(
             embedder_class.read_embedded_words,
             y_true,
-            TrainingMethod.GRID_SEARCH_CV,
             label=get_model_suffix_name_for_all_classes(embedder_class))
         y_pred = model.predict(embedder_class.read_embedded_words())
 

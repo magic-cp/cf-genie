@@ -17,8 +17,19 @@ from cf_genie.utils.read_write_files import (write_grid_search_cv_results,
 
 
 class TrainingMethod(Enum):
+    """
+    Choices for possible training methods.
+    """
+
     HYPEROPT = auto()
+    """
+    Use hyperopt to find the best parameters. This would require to have a MongoDB instance running just like described on the README file.
+    """
+
     GRID_SEARCH_CV = auto()
+    """
+    Use scikit-learn GridSearchCV class to run grid-search on your classifier template.
+    """
 
 
 def hamming_score(*args, **kwargs):
@@ -66,11 +77,11 @@ class BaseSupervisedModel(BaseModel):
         'f1_weighted': 'f1_weighted',
         'hamming_score': make_scorer(hamming_loss, greater_is_better=False),
     }
+    TRAINING_METHOD = None
 
     def __init__(self,
                  X_getter: Callable[[], List[List[float]]],
                  y: List[str],
-                 training_method: TrainingMethod,
                  label: str = ''):
         """
         Initialize the embedder.
@@ -79,7 +90,9 @@ class BaseSupervisedModel(BaseModel):
         """
         self._X_getter = X_getter
         self._y = y
-        self.training_method = training_method
+        if self.TRAINING_METHOD is None:
+            raise ValueError(
+                f'Training method not specified for {self.__class__.__name__}. Did you forget to set the TRAINING_METHOD class attribute?')
         super().__init__(label)
 
     # @staticmethod
@@ -163,7 +176,7 @@ class BaseSupervisedModel(BaseModel):
     def _train_if_not_in_disk(self):
         model_name = self.model_name
 
-        if self.training_method == TrainingMethod.HYPEROPT:
+        if self.TRAINING_METHOD == TrainingMethod.HYPEROPT:
             self.log.info('Building %s model from scratch using hyper-parameterization', model_name)
 
             with Timer(f'{model_name} hyper-parameterization', log=self.log):
@@ -177,13 +190,13 @@ class BaseSupervisedModel(BaseModel):
                     self._get_search_space(),
                     mongo_exp_key=model_name,
                     # store_in_mongo=False,
-                    fmin_kwrgs=self.get_fmin_kwargs())
-                model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
+                    kwrgs=self.get_fmin_kwargs())
+                model = self.del_object(**hyperopt_info.best_params_evaluated_space)
                 model.fit(self._X_getter(), self._y)
-        elif self.training_method == TrainingMethod.GRID_SEARCH_CV:
+        elif self.TRAINING_METHOD == TrainingMethod.GRID_SEARCH_CV:
             model = self._grid_search_model()
         else:
-            raise NotImplementedError(f'Training method {self.training_method} not implemented')
+            raise NotImplementedError(f'Training method {self.TRAINING_METHOD} not implemented')
         return model
 
     def _grid_search_model(self):
