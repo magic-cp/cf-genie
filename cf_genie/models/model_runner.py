@@ -9,6 +9,7 @@ from cf_genie.embedders.base import BaseEmbedder
 from cf_genie.models import BaseSupervisedModel
 from cf_genie.models.base import TrainingMethod
 from cf_genie.utils import Timer
+from cf_genie.utils import TAG_GROUPS
 from cf_genie.utils.exceptions import ModelTrainingException
 
 log = logger.get_logger(__name__)
@@ -60,29 +61,39 @@ def one_vs_all(
         if callback:
             callback()
 
-        with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except {tag_group} data', log=log):
-            y_not_tag_group = y != tag_group
 
-            def get_x():
-                X = embedder_class.read_embedded_words()
-                return X[y_not_tag_group]
-            wrap_model_class_for_exception_handling(model_class,
-                                                    get_x,
-                                                    y[y_not_tag_group],
-                                                    label=get_model_suffix_name_without_tag(embedder_class, tag_group))
+def removing_one_class(
+        model_class: Type[BaseSupervisedModel],
+        embedder_class: Type[BaseEmbedder],
+        y: np.ndarray,
+        callback=None,
+        tag_group=None):
+    if tag_group is None:
+        raise ValueError(f'tag_group must be provided, and it has to be any of the following values {TAG_GROUPS}')
 
-        if callback:
-            callback()
+    with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except {tag_group} data', log=log):
+        y_not_tag_group = y != tag_group
+
+        def get_x():
+            X = embedder_class.read_embedded_words()
+            return X[y_not_tag_group]
+        wrap_model_class_for_exception_handling(model_class,
+                                                get_x,
+                                                y[y_not_tag_group],
+                                                label=get_model_suffix_name_without_tag(embedder_class, tag_group))
+
+    if callback:
+        callback()
 
 
 class RunStrategy(Enum):
     ALL = auto()
     ONE_VS_ALL = auto()
-    # UNDERSAMPLING = auto()
+    REMOVING_ONE_CLASS = auto()
 
 
 def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray,
-              run_strategy: RunStrategy, embedders: List[Type[BaseEmbedder]] = EMBEDDERS):
+              run_strategy: RunStrategy, embedders: List[Type[BaseEmbedder]] = EMBEDDERS, **kwargs):
     """
     Run a model in all possible embedders
     """
@@ -90,7 +101,9 @@ def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray,
         fun = all_strategy
     elif RunStrategy.ONE_VS_ALL == run_strategy:
         fun = one_vs_all
+    elif RunStrategy.REMOVING_ONE_CLASS == run_strategy:
+        fun = removing_one_class
     else:
         raise NotImplementedError(run_strategy.__str__())
     for embedder in embedders:
-        fun(model_class, embedder, y)
+        fun(model_class, embedder, y, **kwargs)
