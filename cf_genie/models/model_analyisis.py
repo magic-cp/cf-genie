@@ -43,34 +43,3 @@ def get_pandas_df_for_all_classes(
         index_col=False)
     df['embedder'] = embedder.__name__
     return df
-
-
-def get_acc_pandas_df_for_model_all_classes(
-    model_class: Type[BaseSupervisedModel],
-    scores=[
-        'f1_micro',
-        'f1_macro',
-        'f1_weighted',
-        'hamming_score']) -> pd.DataFrame:
-    dfs = []
-    y = utils.read_cleaned_dataset()['most_occurrent_tag_group'].to_numpy()
-    for embedder in EMBEDDERS:
-        try:
-            df = get_pandas_df_for_all_classes(
-                model_class(
-                    embedder.read_embedded_words,
-                    y,
-                    label=get_model_suffix_name_for_all_classes(embedder)),
-                embedder, scores)
-            dfs.append(df)
-        except Exception as e:
-            print(embedder + ' not trained to model_class ' + model_class)
-            print(e)
-
-    df = pd.concat(dfs, ignore_index=True)
-    if df is not None:
-        cols = [col for col in df.columns.tolist() if col not in ['params', 'embedder']]
-        cols = ['params', 'embedder'] + cols
-        df = df[cols]
-        return df
-    return None
