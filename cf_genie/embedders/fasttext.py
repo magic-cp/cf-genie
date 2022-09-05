@@ -8,20 +8,20 @@ from cf_genie.utils import Timer
 
 
 class FastTextEmbedder(BaseEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]], vector_size: Optional[int] = None):
-        super().__init__(docs_to_train_embedder)
+    def __init__(self, size: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        model_path = utils.get_model_path(f'fasttext.bin' if vector_size is None else f'fasttext-{vector_size}.bin')
+        model_path = utils.get_model_path(f'{self.embedder_name}.bin')
         try:
             model = FastText.load(model_path)
-        except BaseException:
+        except:
             self.log.info('Model not saved, building it from scratch')
-            model = FastText(epochs=30, workers=utils.CORES, vector_size=vector_size or 100)
-            model.build_vocab(docs_to_train_embedder)
+            model = FastText(epochs=30, workers=utils.CORES, vector_size=size or 100)
+            model.build_vocab(self.docs_to_train_embedder)
 
             with Timer(f'FastText training {model}', log=self.log):
                 model.train(
-                    docs_to_train_embedder,
+                    self.docs_to_train_embedder,
                     total_examples=model.corpus_count,
                     epochs=model.epochs)
             model.save(model_path)
@@ -33,25 +33,25 @@ class FastTextEmbedder(BaseEmbedder):
 
 
 class FastTextEmbedder30(FastTextEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 30)
+    def __init__(self, *args, **kwargs):
+        super().__init__(30, *args, **kwargs)
 
 
 class FastTextEmbedder50(FastTextEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 50)
+    def __init__(self, *args, **kwargs):
+        super().__init__(50, *args, **kwargs)
 
 
 class FastTextEmbedder100(FastTextEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 100)
+    def __init__(self, *args, **kwargs):
+        super().__init__(100, *args, **kwargs)
 
 
 class FastTextEmbedder150(FastTextEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 150)
+    def __init__(self, *args, **kwargs):
+        super().__init__(150, *args, **kwargs)
 
 
 class FastTextEmbedder200(FastTextEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 200)
+    def __init__(self, *args, **kwargs):
+        super().__init__(200, *args, **kwargs)

@@ -57,12 +57,12 @@ def objective(tagged_docs: List[TaggedDocument], log: logger.Logger, params):
 
 
 class Doc2VecEmbedderWithSize(BaseEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]], size: int):
-        super().__init__(docs_to_train_embedder)
+    def __init__(self, size: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         tagged_docs = self._tagged_docs()
 
-        model_path = utils.get_model_path(f'doc2vec-{size}.bin')
+        model_path = utils.get_model_path(f'{self.embedder_name}.bin')
         try:
             model = Doc2Vec.load(model_path)
         except BaseException:
@@ -98,25 +98,25 @@ class Doc2VecEmbedderWithSize(BaseEmbedder):
 
 
 class Doc2VecEmbedder30(Doc2VecEmbedderWithSize):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 30)
+    def __init__(self, *args, **kwargs):
+        super().__init__(30, *args, **kwargs)
 
 
 class Doc2VecEmbedder50(Doc2VecEmbedderWithSize):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 50)
+    def __init__(self, *args, **kwargs):
+        super().__init__(50, *args, **kwargs)
 
 
 class Doc2VecEmbedder100(Doc2VecEmbedderWithSize):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 100)
+    def __init__(self, *args, **kwargs):
+        super().__init__(100, *args, **kwargs)
 
 
 class Doc2VecEmbedder150(Doc2VecEmbedderWithSize):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 150)
+    def __init__(self, *args, **kwargs):
+        super().__init__(150, *args, **kwargs)
 
 
 class Doc2VecEmbedder200(Doc2VecEmbedderWithSize):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 200)
+    def __init__(self, *args, **kwargs):
+        super().__init__(200, *args, **kwargs)
