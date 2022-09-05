@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
+import argparse
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -16,8 +17,17 @@ log = logger.get_logger(__name__)
 
 tqdm.pandas()
 
+def parse_args(args):
+    parser = argparse.ArgumentParser(description='Transform the raw dataset to a clean dataset', prog=__name__)
+    parser.add_argument('--without-adhoc', action='store_true', help='Generate the cleaned dataset without ADHOC problems')
 
-def main():
+    return parser.parse_args(args)
+
+
+
+def main(*args):
+    args = parse_args(args)
+
     df = utils.read_raw_dataset()
 
     log.info('Raw dataset shape: %s', df.shape)
@@ -78,7 +88,14 @@ def main():
     log.info('Dataset shape after cleaning: %s', df.shape)
 
     log.info('Dtypes: %s', df.dtypes['preprocessed_statement'])
-    utils.write_cleaned_dataframe_to_csv(df)
+
+    if args.without_adhoc:
+        name_suffix = 'without_adhoc'
+        df = df[df['most_occurrent_tag_group'] != 'ADHOC']
+    else:
+        name_suffix = ''
+
+    utils.write_cleaned_dataframe_to_csv(df, name_suffix=name_suffix)
 
 
 if __name__ == '__main__':
