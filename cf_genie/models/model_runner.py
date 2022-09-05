@@ -35,52 +35,52 @@ def wrap_model_class_for_exception_handling(model_class: Type[BaseSupervisedMode
         return None
 
 
-def all_strategy(model_class: Type[BaseSupervisedModel], embedder_class: Type[BaseEmbedder], y: np.ndarray):
-    with Timer(f'Training {model_class.__name__} on embedder {embedder_class.__name__}', log=log):
+def all_strategy(model_class: Type[BaseSupervisedModel], embedder: BaseEmbedder, y: np.ndarray):
+    with Timer(f'Training {model_class.__name__} on embedder {embedder.embedder_name}', log=log):
 
-        wrap_model_class_for_exception_handling(model_class, embedder_class.read_embedded_words,
+        wrap_model_class_for_exception_handling(model_class, embedder.read_embedded_words,
                                                 y,
-                                                label=get_model_suffix_name_for_all_classes(embedder_class))
+                                                label=get_model_suffix_name_for_all_classes(embedder.__class__))
 
 
 def one_vs_all(
         model_class: Type[BaseSupervisedModel],
-        embedder_class: Type[BaseEmbedder],
+        embedder: BaseEmbedder,
         y: np.ndarray,
         callback=None):
     for tag_group in np.unique(y):
         non_tag_group = f'NON_{tag_group}'
         y_tag_group = np.vectorize(lambda x: tag_group if x == tag_group else non_tag_group)(y)
         log.info(np.unique(y_tag_group))
-        with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on tag group {tag_group} vs others', log=log):
+        with Timer(f'Training model {model_class.__name__} with embedder {embedder.embedder_name} on tag group {tag_group} vs others', log=log):
             wrap_model_class_for_exception_handling(
                 model_class,
-                embedder_class.read_embedded_words,
+                embedder.read_embedded_words,
                 y_tag_group,
-                label=get_model_suffix_name_for_tag_vs_rest(embedder_class, tag_group))
+                label=get_model_suffix_name_for_tag_vs_rest(embedder.__class__, tag_group))
         if callback:
             callback()
 
 
 def removing_one_class(
         model_class: Type[BaseSupervisedModel],
-        embedder_class: Type[BaseEmbedder],
+        embedder: BaseEmbedder,
         y: np.ndarray,
         callback=None,
         tag_group=None):
     if tag_group is None:
         raise ValueError(f'tag_group must be provided, and it has to be any of the following values {TAG_GROUPS}')
 
-    with Timer(f'Training model {model_class.__name__} with embedder {embedder_class.__name__} on all classes except {tag_group} data', log=log):
+    with Timer(f'Training model {model_class.__name__} with embedder {embedder.embedder_name} on all classes except {tag_group} data', log=log):
         y_not_tag_group = y != tag_group
 
         def get_x():
-            X = embedder_class.read_embedded_words()
+            X = embedder.read_embedded_words()
             return X[y_not_tag_group]
         wrap_model_class_for_exception_handling(model_class,
                                                 get_x,
                                                 y[y_not_tag_group],
-                                                label=get_model_suffix_name_without_tag(embedder_class, tag_group))
+                                                label=get_model_suffix_name_without_tag(embedder.__class__, tag_group))
 
     if callback:
         callback()
@@ -89,11 +89,10 @@ def removing_one_class(
 class RunStrategy(Enum):
     ALL = auto()
     ONE_VS_ALL = auto()
-    REMOVING_ONE_CLASS = auto()
 
 
 def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray,
-              run_strategy: RunStrategy, embedders: List[Type[BaseEmbedder]] = EMBEDDERS, **kwargs):
+              run_strategy: RunStrategy, embedder: BaseEmbedder, **kwargs):
     """
     Run a model in all possible embedders
     """
@@ -101,9 +100,7 @@ def run_model(model_class: Type[BaseSupervisedModel], y: np.ndarray,
         fun = all_strategy
     elif RunStrategy.ONE_VS_ALL == run_strategy:
         fun = one_vs_all
-    elif RunStrategy.REMOVING_ONE_CLASS == run_strategy:
-        fun = removing_one_class
     else:
         raise NotImplementedError(run_strategy.__str__())
-    for embedder in embedders:
-        fun(model_class, embedder, y, **kwargs)
+
+    fun(model_class, embedder, y, **kwargs)
