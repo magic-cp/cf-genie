@@ -1,7 +1,7 @@
 import argparse
 import importlib
 from types import ModuleType
-from typing import Tuple
+from typing import Tuple, Optional, List
 
 import cf_genie.logger as logger
 from cf_genie.utils import Timer
@@ -23,12 +23,22 @@ def import_module(task: str) -> ModuleType:
         e.msg = f'Task {task} is not present in the cf_genie.tasks module'
         raise e
 
-def parse_prog_arg(prog_arg: str) -> Tuple[str, str]:
+def parse_prog_arg(prog_arg: str) -> Tuple[str, Optional[str]]:
     prog_arg_split = prog_arg.split('=')
-    if len(prog_arg_split) != 2:
+    if len(prog_arg_split) > 2:
         raise ValueError(f"Found more than one '=' in program argument {prog_arg}")
 
-    return prog_arg_split[0], prog_arg_split[1]
+    if len(prog_arg_split) == 1:
+        return prog_arg_split[0], None
+    else:
+        return prog_arg_split[0], prog_arg_split[1]
+
+def flatten_args(prog_args: List[Tuple[str, Optional[str]]]):
+    result = []
+    for arg, value in prog_args:
+        result.append(f'--{arg}')
+        if value: result.append(str(value))
+    return result
 
 def main():
     parser = argparse.ArgumentParser(description='Run a task inside cf_genie.tasks')
@@ -43,7 +53,7 @@ def main():
 
     log = logger.get_logger('task_runner')
     with Timer(f'Executing `main` function of module {module.__name__}', log=log):
-        module.main()
+        module.main(*flatten_args(args.prog_arg))
 
 
 if __name__ == '__main__':
