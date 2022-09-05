@@ -17,8 +17,8 @@ def get_tfidf_vectorizer(ngram_range: Tuple[int, int], docs_to_train_embedder: L
 
 
 class BaseTfidfEmbedder(BaseEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]], ngram: int):
-        super().__init__(docs_to_train_embedder)
+    def __init__(self, ngram: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         embedder_path = utils.get_model_path(f'{self.embedder_name}.pkl')
         try:
@@ -26,7 +26,7 @@ class BaseTfidfEmbedder(BaseEmbedder):
         except FileNotFoundError:
             self.log.debug('Model not stored. Building TFIDF model from scratch')
             with Timer(f'Building tf-idf for {ngram}-grams', log=self.log):
-                self.vectorizer: TfidfVectorizer = get_tfidf_vectorizer((ngram, ngram), docs_to_train_embedder)
+                self.vectorizer: TfidfVectorizer = get_tfidf_vectorizer((ngram, ngram), self.docs_to_train_embedder)
             utils.write_model_to_file(self.embedder_name, self.vectorizer)
 
     def embed(self, doc: List[str]):
@@ -34,15 +34,15 @@ class BaseTfidfEmbedder(BaseEmbedder):
 
 
 class TfidfEmbedderUniGram(BaseTfidfEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 1)
+    def __init__(self, *args, **kwargs):
+        super().__init__(1, *args, **kwargs)
 
 
 class TfidfEmbedderBiGram(BaseTfidfEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 2)
+    def __init__(self, *args, **kwargs):
+        super().__init__(2, *args, **kwargs)
 
 
 class TfidfEmbedderTriGram(BaseTfidfEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder, 3)
+    def __init__(self, *args, **kwargs):
+        super().__init__(3, *args, **kwargs)

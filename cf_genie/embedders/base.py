@@ -38,13 +38,11 @@ class BaseEmbedder(logger.Loggable):
     def embed(self, docs: List[str]) -> List[float]:
         raise NotImplementedError("This is not implemented yet")
 
-    @classmethod
-    def read_embedded_words(cls) -> np.ndarray:
+    def read_embedded_words(self) -> np.ndarray:
         try:
-            return utils.read_numpy_array(cls.__name__)
+            return utils.read_numpy_array(self.embedder_name)
         except FileNotFoundError:
-            raise ValueError(f'{cls.__name__} has not been trained yet. Run the embed_datasets task to fix this error')
+            raise ValueError(f'{self.embedder_name} has not been trained yet. Run the embed_datasets task to fix this error')
 
-    @classmethod
-    def write_embedded_words(cls, n) -> None:
-        utils.write_numpy_array(cls.__name__, n)
+    def write_embedded_words(self, n) -> None:
+        utils.write_numpy_array(self.embedder_name, n)

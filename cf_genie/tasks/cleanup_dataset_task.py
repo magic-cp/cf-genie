@@ -90,7 +90,7 @@ def main(*args):
     log.info('Dtypes: %s', df.dtypes['preprocessed_statement'])
 
     if args.without_adhoc:
-        name_suffix = 'without_adhoc'
+        name_suffix = 'without-adhoc'
         df = df[df['most_occurrent_tag_group'] != 'ADHOC']
     else:
         name_suffix = ''
