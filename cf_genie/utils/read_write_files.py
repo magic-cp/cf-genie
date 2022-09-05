@@ -67,11 +67,17 @@ def _write_dataset_to_csv(file_name: str, dataframe: pd.DataFrame):
 def read_raw_dataset() -> pd.DataFrame:
     return _read_dataset_from_csv('raw_cf_problems.csv')
 
+def get_cleaned_dataset_file_name(name_suffix: str='') -> str:
+    file_name_suffix = '' if not name_suffix else f'_{name_suffix}'
+    return f'cleaned_cf_problems{file_name_suffix}.csv'
 
-def read_cleaned_dataset() -> pd.DataFrame:
-    df = _read_dataset_from_csv('cleaned_cf_problems.csv')
+def read_cleaned_dataset(name_suffix: str = '') -> pd.DataFrame:
+    df = _read_dataset_from_csv(get_cleaned_dataset_file_name(name_suffix))
     df['preprocessed_statement'] = df['preprocessed_statement'].apply(lambda x: x.split(' '))
     return df
+
+def write_cleaned_dataframe_to_csv(dataframe: pd.DataFrame, name_suffix=''):
+    _write_dataset_to_csv(get_cleaned_dataset_file_name(name_suffix), dataframe)
 
 
 @_absolute_file_path(DATASET_PATH)
@@ -86,8 +92,6 @@ def write_numpy_array(file_name: str, n: np.ndarray) -> None:
     return np.save(file_name, n)
 
 
-def write_cleaned_dataframe_to_csv(dataframe: pd.DataFrame):
-    _write_dataset_to_csv('cleaned_cf_problems.csv', dataframe)
 
 
 @_absolute_file_path(PLOTS_PATH)
