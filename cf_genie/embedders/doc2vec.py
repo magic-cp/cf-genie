@@ -56,41 +56,6 @@ def objective(tagged_docs: List[TaggedDocument], log: logger.Logger, params):
     }
 
 
-class Doc2VecEmbedder(BaseEmbedder):
-    def __init__(self, docs_to_train_embedder: List[List[str]]):
-        super().__init__(docs_to_train_embedder)
-
-        tagged_docs = self._tagged_docs()
-
-        model_path = utils.get_model_path('doc2vec.bin')
-        try:
-            model = Doc2Vec.load(model_path)
-        except BaseException:
-            self.log.info('Model not stored. Building Doc2Vec model from scratch using hyper-parameterization')
-            with Timer(f'Doc2Vec hyper-parameterization', log=self.log):
-                hyperopt_info = utils.run_hyperopt(
-                    partial(objective, tagged_docs, self.log),
-                    SEARCH_SPACE,
-                    mongo_exp_key=self.embedder_name,
-                    fmin_kwrgs={
-                        'max_evals': 40})
-
-            assert hyperopt_info.best_model is not None, 'Best model is None'
-            model: Doc2Vec = hyperopt_info.best_model
-            model.save(model_path)
-
-        self.model: Doc2Vec = model
-
-    def _tagged_docs(self) -> List[str]:
-        return [TaggedDocument(words=doc, tags=[i]) for i, doc in enumerate(self.docs_to_train_embedder)]
-
-    def embed(self, doc: List[str]) -> pd.Series:
-        return self.model.infer_vector(doc)
-
-    def __str__(self):
-        return self.model.__str__()
-
-
 class Doc2VecEmbedderWithSize(BaseEmbedder):
     def __init__(self, docs_to_train_embedder: List[List[str]], size: int):
         super().__init__(docs_to_train_embedder)
