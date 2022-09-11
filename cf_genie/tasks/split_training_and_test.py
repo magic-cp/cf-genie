@@ -40,8 +40,15 @@ def main():
     log.info('Value counts of test dataset: %s', df_test['most_occurrent_tag_group'].value_counts())
     log.info('Value counts of test dataset as percentages: %s', df_test['most_occurrent_tag_group'].value_counts(normalize=True))
 
+    for df_ in [df_train, df_test]:
+        df_['preprocessed_statement'] = df_['preprocessed_statement'].apply(lambda row: ' '.join(row))
 
-    utils.write_cleaned_dataframe_to_csv(df, name_suffix=name_suffix)
+        # Same for the tag groups
+        df_['tag_groups'] = df_['tag_groups'].apply(lambda row: ' '.join(row))
+
+
+    utils.write_cleaned_dataframe_to_csv(df_test, name_suffix=name_suffix + '-test')
+    utils.write_cleaned_dataframe_to_csv(df_train, name_suffix=name_suffix + '-train')
 
 
 if __name__ == '__main__':
