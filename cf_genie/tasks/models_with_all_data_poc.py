@@ -20,18 +20,12 @@ log = logger.get_logger(__name__)
 
 
 def main():
-    df = utils.read_cleaned_dataset()
+    df = utils.read_cleaned_dataset('without-adhoc-train')
     y = df['most_occurrent_tag_group'].to_numpy()
-    # for run_strategy, model_class, embedder_class in product(RunStrategy, SUPERVISED_MODELS, EMBEDDERS):
-    #     # with models already trained, we can pass an empty list here.
-    #     embedder = embedder_class([])
-    #     run_model(model_class, y, run_strategy, embedder)
 
-    df = utils.read_cleaned_dataset('without-adhoc')
-    y = df['most_occurrent_tag_group'].to_numpy()
 
     for model_class, embedder_class in product(SUPERVISED_MODELS, EMBEDDERS):
-        embedder = embedder_class([], label='without-adhoc')
+        embedder = embedder_class([], label='without-adhoc-train')
         removing_one_class(model_class, embedder, y, tag_group='ADHOC')
 
 
