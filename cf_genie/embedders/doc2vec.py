@@ -64,6 +64,7 @@ class Doc2VecEmbedderWithSize(BaseEmbedder):
 
         model_path = utils.get_model_path(f'{self.embedder_name}.bin')
         try:
+            self.log.debug('Loading model from: %s', model_path)
             model = Doc2Vec.load(model_path)
         except BaseException:
             self.log.info('Model not stored. Building Doc2Vec model from scratch')
