@@ -15,22 +15,24 @@ tqdm.pandas()
 
 
 def main():
-    df = utils.read_cleaned_dataset()
-    df_without_adhoc = utils.read_cleaned_dataset('without-adhoc')
 
-    for embedder_class in EMBEDDERS:
-        embedder = embedder_class(df['preprocessed_statement'].to_numpy())
-        with utils.Timer(f'Embedding with {embedder.embedder_name}', log=log):
-            words = np.array(df['preprocessed_statement'].progress_apply(lambda x: embedder.embed(x)).tolist())
-        with utils.Timer(f'Writing words of {embedder.embedder_name} to file', log=log):
-            embedder.write_embedded_words(words)
+    for label in ['without-adhoc-train', 'without-adhoc-test']:
+        if label:
+            df = utils.read_cleaned_dataset(label)
+        else:
+            df = utils.read_cleaned_dataset()
+        for embedder_class in EMBEDDERS:
+            if label:
+                embedder = embedder_class(df['preprocessed_statement'].to_numpy(), label)
+            else:
+                embedder = embedder_class(df['preprocessed_statement'].to_numpy())
+
+            with utils.Timer(f'Embedding with {embedder.embedder_name}', log=log):
+                words = np.array(df['preprocessed_statement'].progress_apply(lambda x: embedder.embed(x)).tolist())
+            with utils.Timer(f'Writing words of {embedder.embedder_name} to file', log=log):
+                embedder.write_embedded_words(words)
 
 
-        embedder = embedder_class(df_without_adhoc['preprocessed_statement'].to_numpy(), 'without-adhoc')
-        with utils.Timer(f'Embedding with {embedder.embedder_name}', log=log):
-            words = np.array(df_without_adhoc['preprocessed_statement'].progress_apply(lambda x: embedder.embed(x)).tolist())
-        with utils.Timer(f'Writing words of {embedder.embedder_name} to file', log=log):
-            embedder.write_embedded_words(words)
 
 
 if __name__ == '__main__':
