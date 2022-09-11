@@ -153,8 +153,8 @@ class LSTM(BaseSupervisedModel):
     def _param_grid_for_grid_search():
         return {
             'model__zero_padding_layer_padding': [1, 3],
-            'model__lstm_layer_1_num_nodes': [16, 32, 64],
-            'model__lstm_layer_2_num_nodes': [None, 8],
-            'model__extra_hidden_layer_num_nodes': [None, 16, 32],
+            'model__lstm_layer_1_num_nodes': [16, 32],
+            'model__lstm_layer_2_num_nodes': [None, 4],
+            'model__extra_hidden_layer_num_nodes': [None, 8],
             'model__dropout': [0, 0.25, 0.5],
         }
