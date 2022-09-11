@@ -18,28 +18,23 @@ log = logger.get_logger(__name__)
 
 
 def main():
-    RELEVANT_SCORES = ['f1_micro', 'hamming_score']
-    y_true = utils.read_cleaned_dataset()['most_occurrent_tag_group'].to_numpy()
-    y_not_tag_group = y_true != 'ADHOC'
+    y_true = utils.read_cleaned_dataset('without-adhoc-test')['most_occurrent_tag_group'].to_numpy()
 
-    def get_x(e: BaseEmbedder):
-        X = e.read_embedded_words()
-        return X[y_not_tag_group]
-
-    y_true = y_true[y_not_tag_group]
 
     for model_class, embedder_class in product(SUPERVISED_MODELS, EMBEDDERS):
+        embedder = embedder_class([], 'without-adhoc-test')
         model = model_class(
-            get_x,
+            embedder.read_embedded_words,
             y_true,
             label=get_model_suffix_name_without_tag(embedder_class, 'ADHOC'))
-        y_pred = model.predict(get_x(embedder_class([])))
+        y_pred = model.predict(embedder.read_embedded_words())
 
-        _, axes = plt.subplots(figsize=(11, 11))
-        ConfusionMatrixDisplay.from_predictions(y_true, y_pred, ax=axes, normalize='true')
-        axes.set_title(f'Confusion matrix for \n {model.model_name}')
-        utils.write_plot(f'confusion_matrix/{model.model_name}', plt)
-        plt.close()
+        for normalize in ['true', 'pred', 'all', None]:
+            _, axes = plt.subplots(figsize=(11, 11))
+            ConfusionMatrixDisplay.from_predictions(y_true, y_pred, ax=axes, normalize=normalize)
+            axes.set_title(f'Confusion matrix for \n {model.model_name} \n with {normalize} normalization')
+            utils.write_plot(f'confusion_matrix/{model.model_name}/normalize-{normalize}', plt)
+            plt.close()
         log.info('Classification Report for model %s: \n%s', model.model_name, classification_report(y_true, y_pred))
     pass
 

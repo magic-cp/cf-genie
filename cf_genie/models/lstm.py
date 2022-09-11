@@ -36,7 +36,6 @@ log = logger.get_logger(__name__)
 
 class LSTM(BaseSupervisedModel):
     TRAINING_METHOD = TrainingMethod.GRID_SEARCH_CV
-    # @staticmethod
 
     def init_model_object(self, **params) -> Sequential:
 
