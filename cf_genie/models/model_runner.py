@@ -8,8 +8,7 @@ from cf_genie.embedders import EMBEDDERS
 from cf_genie.embedders.base import BaseEmbedder
 from cf_genie.models import BaseSupervisedModel
 from cf_genie.models.base import TrainingMethod
-from cf_genie.utils import Timer
-from cf_genie.utils import TAG_GROUPS
+from cf_genie.utils import TAG_GROUPS, Timer
 from cf_genie.utils.exceptions import ModelTrainingException
 
 log = logger.get_logger(__name__)

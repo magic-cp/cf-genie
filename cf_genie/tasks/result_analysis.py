@@ -1,13 +1,12 @@
 from itertools import product
 
 import matplotlib.pyplot as plt
-from sklearn.metrics import (ConfusionMatrixDisplay, classification_report,
-                             confusion_matrix)
-from cf_genie.embedders.base import BaseEmbedder
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report
 
 import cf_genie.logger as logger
 from cf_genie import utils
 from cf_genie.embedders import EMBEDDERS
+from cf_genie.embedders.base import BaseEmbedder
 from cf_genie.models import SUPERVISED_MODELS
 from cf_genie.models.model_runner import get_model_suffix_name_without_tag
 

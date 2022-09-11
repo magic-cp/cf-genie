@@ -32,7 +32,6 @@ class TrainingMethod(Enum):
     """
 
 
-
 class BaseModel(logger.Loggable):
     """
     Represents and holds the information for a model.

@@ -33,7 +33,5 @@ def main():
                 embedder.write_embedded_words(words)
 
 
-
-
 if __name__ == '__main__':
     main()

@@ -1,13 +1,13 @@
 """
 Script to cleanup the dataset. Performs preprocessing over CF statements, and also remapping of tags to "tag groups"
 """
+import argparse
 from itertools import groupby
 
 from tqdm import tqdm
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-import argparse
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -17,12 +17,15 @@ log = logger.get_logger(__name__)
 
 tqdm.pandas()
 
+
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Transform the raw dataset to a clean dataset', prog=__name__)
-    parser.add_argument('--without-adhoc', action='store_true', help='Generate the cleaned dataset without ADHOC problems')
+    parser.add_argument(
+        '--without-adhoc',
+        action='store_true',
+        help='Generate the cleaned dataset without ADHOC problems')
 
     return parser.parse_args(args)
-
 
 
 def main(*args):

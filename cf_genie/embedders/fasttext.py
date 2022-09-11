@@ -14,7 +14,7 @@ class FastTextEmbedder(BaseEmbedder):
         model_path = utils.get_model_path(f'{self.embedder_name}.bin')
         try:
             model = FastText.load(model_path)
-        except:
+        except BaseException:
             self.log.info('Model not saved, building it from scratch')
             model = FastText(epochs=30, workers=utils.CORES, vector_size=size or 100)
             model.build_vocab(self.docs_to_train_embedder)
