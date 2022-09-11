@@ -12,6 +12,6 @@ SUPERVISED_MODELS: List[Type[BaseSupervisedModel]] = [
     MultinomialNaiveBayes,
     ComplementNaiveBayes,
     RandomForest,
-    LSTM,
+    # LSTM,
 ]
 UNSUPERVISED_MODELS: List[Type[BaseUnSupervisedModel]] = [KMeansClustering]
