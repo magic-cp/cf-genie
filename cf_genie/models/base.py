@@ -31,6 +31,11 @@ class TrainingMethod(Enum):
     Use scikit-learn GridSearchCV class to run grid-search on your classifier template.
     """
 
+    DEFER_TO_MODEL = auto()
+    """
+    Defer to the sub-class implementation
+    """
+
 
 class BaseModel(logger.Loggable):
     """
@@ -155,7 +160,7 @@ class BaseSupervisedModel(BaseModel):
 
     def train(self):
         try:
-            self.log.debug('Attempting to load %s from disk storage')
+            self.log.debug('Attempting to load %s from disk storage', self.model_path)
             model = self._read_model_from_disk()
             self.log.debug('Model %s found on disk', self.model_path)
 
@@ -187,10 +192,13 @@ class BaseSupervisedModel(BaseModel):
                     mongo_exp_key=model_name,
                     # store_in_mongo=False,
                     kwrgs=self.get_fmin_kwargs())
-                model = self.del_object(**hyperopt_info.best_params_evaluated_space)
+                model = self.init_model_object(**hyperopt_info.best_params_evaluated_space)
                 model.fit(self._X_getter(), self._y)
         elif self.TRAINING_METHOD == TrainingMethod.GRID_SEARCH_CV:
             model = self._grid_search_model()
+        elif self.TRAINING_METHOD == TrainingMethod.DEFER_TO_MODEL:
+            model = self.init_model_object()
+            model.fit(self._X_getter(), self._y)
         else:
             raise NotImplementedError(f'Training method {self.TRAINING_METHOD} not implemented')
         return model
