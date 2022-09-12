@@ -29,7 +29,7 @@ def main():
             label=get_model_suffix_name_without_tag(embedder_class, 'ADHOC'))
         y_pred = model.predict(embedder.read_embedded_words())
 
-        for normalize in ['true', 'pred', 'all', None]:
+        for normalize in ['true', None]:
             _, axes = plt.subplots(figsize=(11, 11))
             ConfusionMatrixDisplay.from_predictions(y_true, y_pred, ax=axes, normalize=normalize)
             axes.set_title(f'Confusion matrix for \n {model.model_name} \n with {normalize} normalization')

@@ -238,3 +238,8 @@ class BaseUnSupervisedModel(BaseModel):
         """
         self._X = X
         super().__init__(label)
+
+class CustomKerasClassifier(KerasClassifier):
+    def fit(self, *args, **kwargs):
+        backend.clear_session()  # to avoid high memory usage
+        super().fit(*args, *kwargs)

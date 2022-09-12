@@ -2,57 +2,48 @@
 Long-short Term Memory (LSTM) model.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import keras
 from hyperopt import hp
-from keras import Sequential, backend, callbacks, layers
+from keras import Sequential, callbacks, layers
 from scikeras.wrappers import KerasClassifier
 from tensorflow import keras
+from itertools import takewhile
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 from cf_genie.models.base import BaseSupervisedModel, CustomKerasClassifier, TrainingMethod
 from cf_genie.utils import get_model_path
 
+
 log = logger.get_logger(__name__)
 
 
-class LSTM(BaseSupervisedModel):
+class MLP(BaseSupervisedModel):
     TRAINING_METHOD = TrainingMethod.GRID_SEARCH_CV
 
     def init_model_object(self, **params) -> Sequential:
 
-        def get_clf_model(zero_padding_layer_padding: int,
-                          lstm_layer_1_num_nodes: int,
-                          lstm_layer_2_num_nodes: int,
-                          dropout: float,
-                          extra_hidden_layer_num_nodes: Optional[int],
+        def get_clf_model(num_hidden_layers_1: int,
+                        num_hidden_layers_2: Optional[int],
+                        num_hidden_layers_3: Optional[int],
                           meta: Dict[str,
                                      Any],
                           compile_kwargs: Dict[str,
                                                Any]) -> Sequential:
-            model = Sequential(name='LSTM-cf-genie')
+            model = Sequential(name='MLP-cf-genie')
 
-            model.add(layers.Normalization(axis=-1, name='normalization', input_shape=(
-                        meta['n_features_in_'],
-                        1)))
+            model.add(layers.Input(shape=(meta['n_features_in_'],)))
 
-            model.add(
-                layers.ZeroPadding1D(
-                    padding=zero_padding_layer_padding,
-                    name='zero-padding-layer'))
+            model.add(layers.Normalization(axis=-1, name='normalization'))
 
-            model.add(
-                layers.Bidirectional(
-                    layers.LSTM(
-                        lstm_layer_1_num_nodes,
-                        name='lstm-layer-1',
-                        return_sequences=lstm_layer_2_num_nodes is not None),
-                    name='lstm-layer-1'))
+            activation = 'relu'
+            layer_sizes = takewhile(lambda x: x is not None and x <= meta['n_features_in_'], [num_hidden_layers_1, num_hidden_layers_2, num_hidden_layers_3])
+            for i, layer_size in enumerate(layer_sizes):
+                model.add(layers.Dense(layer_size, activation=activation, name=f'hidden-layer-{i}'))
 
-            if lstm_layer_2_num_nodes is not None:
-                model.add(layers.LSTM(lstm_layer_2_num_nodes, name='lstm-layer-2', return_sequences=False))
+
 
             if meta['target_type_'] == 'multiclass':
                 n_output_units = meta['n_classes_']
@@ -67,19 +58,19 @@ class LSTM(BaseSupervisedModel):
             else:
                 raise ValueError('Model does not support target type: ' + meta['target_type_'])
 
-            metrics.append('mean_squared_error')
 
-            if dropout > 0:
-                model.add(layers.Dropout(dropout, name='dropout-layer'))
-
-            if extra_hidden_layer_num_nodes:
-                model.add(layers.Dense(extra_hidden_layer_num_nodes, name='extra-hidden', activation='relu'))
+            # metrics.append('accuracy')
+            # metrics.append('recall')
+            # metrics.append('true_positive')
+            # metrics.append('recall')
+            # metrics.append('recall')
+            # metrics.append('recall')
 
             model.add(layers.Dense(n_output_units, name='output', activation=output_activation))
 
             model.compile(loss=loss, metrics=metrics, optimizer=compile_kwargs['optimizer'])
 
-            # model.summary()
+            model.summary()
             return model
 
         early_stopping = callbacks.EarlyStopping(patience=2, monitor='loss')
@@ -89,7 +80,7 @@ class LSTM(BaseSupervisedModel):
         clf = CustomKerasClassifier(
             model=get_clf_model,
             epochs=100,
-            verbose=0,
+            verbose=1,
             optimizer='adam',
             optimizer__learning_rate=0.001,
             callbacks=[early_stopping]
@@ -99,7 +90,7 @@ class LSTM(BaseSupervisedModel):
     @staticmethod
     def _get_search_space():
         return {param: hp.choice(param, choices)
-                for param, choices in LSTM._param_grid_for_grid_search().items()}
+                for param, choices in MLP._param_grid_for_grid_search().items()}
 
     @property
     def model(self) -> CustomKerasClassifier:
@@ -135,9 +126,7 @@ class LSTM(BaseSupervisedModel):
     @staticmethod
     def _param_grid_for_grid_search():
         return {
-            'model__zero_padding_layer_padding': [1],
-            'model__lstm_layer_1_num_nodes': [2, 4],
-            'model__lstm_layer_2_num_nodes': [None, 2],
-            'model__extra_hidden_layer_num_nodes': [None, 2],
-            'model__dropout': [0, 0.25],
+            'model__num_hidden_layers_1': [18, 28, 52, 78, 102],
+            'model__num_hidden_layers_2': [None],
+            'model__num_hidden_layers_3': [None],
         }
