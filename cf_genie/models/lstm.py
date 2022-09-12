@@ -17,15 +17,6 @@ from cf_genie.utils import get_model_path
 
 
 class KerasClassifierWithOneHotEncoding(KerasClassifier):
-    @property
-    def target_encoder(self):
-        encoder = super().target_encoder
-        # We have to set this value even for binary classification. Otherwise, the
-        # target encoder won't use One hot encoding
-        encoder.loss = 'categorical_crossentropy'
-
-        return encoder
-
     def fit(self, *args, **kwargs):
         backend.clear_session()  # to avoid high memory usage
         super().fit(*args, *kwargs)
@@ -50,13 +41,14 @@ class LSTM(BaseSupervisedModel):
                                                Any]) -> Sequential:
             model = Sequential(name='LSTM-cf-genie')
 
+            model.add(layers.Normalization(axis=-1, name='normalization', input_shape=(
+                        meta['n_features_in_'],
+                        1)))
+
             model.add(
                 layers.ZeroPadding1D(
                     padding=zero_padding_layer_padding,
-                    name='zero-padding-layer',
-                    input_shape=(
-                        meta['n_features_in_'],
-                        1)))
+                    name='zero-padding-layer'))
 
             model.add(
                 layers.Bidirectional(
@@ -72,8 +64,8 @@ class LSTM(BaseSupervisedModel):
             if meta['target_type_'] == 'multiclass':
                 n_output_units = meta['n_classes_']
                 output_activation = 'softmax'
-                loss = 'categorical_crossentropy'
-                metrics = ['categorical_accuracy']
+                loss = 'sparse_categorical_crossentropy'
+                metrics = ['sparse_categorical_accuracy']
             elif meta['target_type_'] == 'binary':
                 n_output_units = 1
                 output_activation = 'sigmoid'
@@ -99,16 +91,15 @@ class LSTM(BaseSupervisedModel):
 
         early_stopping = callbacks.EarlyStopping(patience=2, monitor='loss')
 
-        csv_logger = callbacks.CSVLogger(self.model_name, append=True)
+        # csv_logger = callbacks.CSVLogger(self.model_name, append=True)
 
         clf = KerasClassifierWithOneHotEncoding(
             model=get_clf_model,
-            epochs=50,
-            batch_size=750,
+            epochs=100,
             verbose=0,
             optimizer='adam',
             optimizer__learning_rate=0.001,
-            callbacks=[early_stopping, csv_logger]
+            callbacks=[early_stopping]
         )
         return clf
 
