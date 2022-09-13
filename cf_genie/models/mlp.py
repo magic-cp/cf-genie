@@ -58,19 +58,11 @@ class MLP(BaseSupervisedModel):
             else:
                 raise ValueError('Model does not support target type: ' + meta['target_type_'])
 
-
-            # metrics.append('accuracy')
-            # metrics.append('recall')
-            # metrics.append('true_positive')
-            # metrics.append('recall')
-            # metrics.append('recall')
-            # metrics.append('recall')
-
             model.add(layers.Dense(n_output_units, name='output', activation=output_activation))
 
             model.compile(loss=loss, metrics=metrics, optimizer=compile_kwargs['optimizer'])
 
-            model.summary()
+            # model.summary()
             return model
 
         early_stopping = callbacks.EarlyStopping(patience=2, monitor='loss')
@@ -79,10 +71,10 @@ class MLP(BaseSupervisedModel):
 
         clf = CustomKerasClassifier(
             model=get_clf_model,
-            epochs=100,
-            verbose=1,
+            epochs=10000,
+            verbose=0,
             optimizer='adam',
-            optimizer__learning_rate=0.001,
+            optimizer__learning_rate=0.0005,
             callbacks=[early_stopping]
         )
         return clf

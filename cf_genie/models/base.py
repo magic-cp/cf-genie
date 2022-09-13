@@ -7,6 +7,8 @@ import numpy as np
 from hyperopt import STATUS_OK
 from sklearn.metrics import f1_score, hamming_loss, make_scorer
 from sklearn.model_selection import GridSearchCV, cross_validate
+from scikeras.wrappers import KerasClassifier
+from keras import backend
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
