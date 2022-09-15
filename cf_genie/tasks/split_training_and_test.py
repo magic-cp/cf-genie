@@ -1,6 +1,8 @@
 """
-Script to cleanup the dataset. Performs preprocessing over CF statements, and also remapping of tags to "tag groups"
+Script to split the training and test split
 """
+import argparse
+
 from sklearn.model_selection import train_test_split
 
 import cf_genie.logger as logger
@@ -12,8 +14,14 @@ logger.setup_applevel_logger(
 
 log = logger.get_logger(__name__)
 
+def parse_args(args):
+    parser = argparse.ArgumentParser(
+        description='Splits the dataset into training and test split')
+    parser.add_argument('--test-size', type=float, help='Test percentage size as a float', default=0.40)
+    return parser.parse_args(args)
 
-def main():
+def main(*args):
+    args = parse_args(args)
     name_suffix = 'without-adhoc'
     df = utils.read_cleaned_dataset(name_suffix=name_suffix)
 
@@ -21,7 +29,7 @@ def main():
 
     X = df.index
     y = df['most_occurrent_tag_group']
-    df_train, df_test = train_test_split(df, test_size=0.20, random_state=42, stratify=y)
+    df_train, df_test = train_test_split(df, test_size=args.test_size, random_state=42, stratify=y)
 
     log.info('Train dataset shape: %s', df_train.shape)
     log.info('Train dataset: %s', df_train.head())
