@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-DATASET_GENERATION_TASKS="
+DOWNLOAD_CF_TASKS="
 load_cf_data
 generate_temp_input_for_raw_dataset
-scrap_dataset
+scrap_dataset"
+
+DATASET_GENERATION_TASKS="
 cleanup_dataset
 split_training_and_test
 balance_dataset
