@@ -20,12 +20,13 @@ log = logger.get_logger(__name__)
 
 def main():
     log.info('Coefficient of variations (COV) higher than ones means that we should not use MinMaxScaler')
-    df = utils.read_cleaned_dataset()
+    df = utils.read_cleaned_dataset('without-adhoc-train')
     y = df['most_occurrent_tag_group'].to_numpy()
-    print(df.count()['most_ocurrent'])
+    log.info(df.count()['most_occurrent_tag_group'])
     unique_y = np.unique(y)
-    for embedder in EMBEDDERS:
-        log.info('Checking stats for %s', embedder.__name__)
+    for embedder_class in EMBEDDERS:
+        embedder = embedder_class([], label='without-adhoc-train')
+        log.info('Checking stats for %s', embedder.embedder_name)
         words = embedder.read_embedded_words()
 
         log.info('Coefficient of variation is: %s', np.argmax(variation(words, axis=0)))
@@ -53,11 +54,11 @@ def main():
         # # log.info('Anderson results: %s', anderson(words))
         # log.info('#' * 80)
 
-        with Timer(f'PCA for {embedder.__name__}', log=log):
+        with Timer(f'PCA for {embedder.embedder_name}', log=log):
             pca = PCA(n_components=2)
             points = pca.fit_transform(words)
 
-        y = np.vectorize(lambda x: 'GEOMETRY' if x == 'GEOMETRY' else 'ADHOC')(y)
+        # y = np.vectorize(lambda x: 'GEOMETRY' if x == 'GEOMETRY' else 'ADHOC')(y)
         unique_y = np.unique(y)
 
         plt.figure(figsize=(10, 6))
@@ -65,10 +66,10 @@ def main():
             y_label = y == label
             X_label = points[y_label]
             plt.scatter(X_label[:, 0], X_label[:, 1], label=label)
-        plt.title(f'PCA components for {embedder.__name__}')
+        plt.title(f'PCA components for {embedder.embedder_name}')
         plt.legend()
         plt.grid()
-        utils.write_plot(f'pca/pca-plot-{embedder.__name__}-demo.png', plt)
+        utils.write_plot(f'pca/pca-plot-{embedder.embedder_name}-demo.png', plt)
         plt.close()
 
         # plt.figure(figsize=(10, 6))
