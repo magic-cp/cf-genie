@@ -79,8 +79,14 @@ def read_cleaned_dataset(name_suffix: str = '') -> pd.DataFrame:
     return df
 
 
-def write_cleaned_dataframe_to_csv(dataframe: pd.DataFrame, name_suffix=''):
-    _write_dataset_to_csv(get_cleaned_dataset_file_name(name_suffix), dataframe)
+def write_cleaned_dataframe_to_csv(df: pd.DataFrame, name_suffix=''):
+    # Converting as a string separated by ' '
+    df['preprocessed_statement'] = df['preprocessed_statement'].progress_apply(lambda row: ' '.join(row))
+
+    # Same for the tag groups
+    df['tag_groups'] = df['tag_groups'].progress_apply(lambda row: ' '.join(row))
+
+    _write_dataset_to_csv(get_cleaned_dataset_file_name(name_suffix), df)
 
 
 @_absolute_file_path(DATASET_PATH)

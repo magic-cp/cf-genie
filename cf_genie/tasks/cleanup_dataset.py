@@ -80,12 +80,6 @@ def main(*args):
     df['preprocessed_statement'] = df['preprocessed_statement'].progress_apply(
         lambda row: list(filter(lambda x: x != 'number', row)))
 
-    # Converting as a string separated by ' '
-    df['preprocessed_statement'] = df['preprocessed_statement'].progress_apply(lambda row: ' '.join(row))
-
-    # Same for the tag groups
-    df['tag_groups'] = df['tag_groups'].progress_apply(lambda row: ' '.join(row))
-
     log.info('Dataset after cleaning and preprocessing:')
     log.info(df.head())
     log.info('Dataset shape after cleaning: %s', df.shape)
