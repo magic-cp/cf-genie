@@ -17,15 +17,9 @@ tqdm.pandas()
 def main():
 
     for label in ['without-adhoc-train', 'without-adhoc-test']:
-        if label:
-            df = utils.read_cleaned_dataset(label)
-        else:
-            df = utils.read_cleaned_dataset()
+        df = utils.read_cleaned_dataset(label)
         for embedder_class in EMBEDDERS:
-            if label:
-                embedder = embedder_class(df['preprocessed_statement'].to_numpy(), label)
-            else:
-                embedder = embedder_class(df['preprocessed_statement'].to_numpy())
+            embedder = embedder_class(df['preprocessed_statement'].to_numpy(), label=label)
 
             with utils.Timer(f'Embedding with {embedder.embedder_name}', log=log):
                 words = np.array(df['preprocessed_statement'].progress_apply(lambda x: embedder.embed(x)).tolist())
