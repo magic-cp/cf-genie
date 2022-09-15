@@ -23,13 +23,17 @@ class BaseEmbedder(logger.Loggable):
         super().__init__()
         label = '' if not label else f'-{label}'
 
-        self._embedder_name = self.__class__.__qualname__ + label  # hat trick to get class name. Works for subclasses too
+        self._embedder_name = self.__class__.__qualname__  # hat trick to get class name. Works for subclasses too
         self._docs_to_train_embedder = docs_to_train_embedder
         self.label = label
 
     @property
     def embedder_name(self) -> str:
         return self._embedder_name
+
+    @property
+    def embedder_name_with_label(self) -> str:
+        return self.embedder_name + self.label
 
     @property
     def docs_to_train_embedder(self) -> List[List[str]]:
@@ -40,10 +44,10 @@ class BaseEmbedder(logger.Loggable):
 
     def read_embedded_words(self) -> np.ndarray:
         try:
-            return utils.read_numpy_array(self.embedder_name)
+            return utils.read_numpy_array(self.embedder_name_with_label)
         except FileNotFoundError:
             raise ValueError(
                 f'{self.embedder_name} has not been trained yet. Run the embed_datasets task to fix this error')
 
     def write_embedded_words(self, n) -> None:
-        utils.write_numpy_array(self.embedder_name, n)
+        utils.write_numpy_array(self.embedder_name_with_label, n)
