@@ -6,7 +6,6 @@ generate_temp_input_for_raw_dataset
 scrap_dataset"
 
 DATASET_GENERATION_TASKS="
-cleanup_dataset
 split_training_and_test
 balance_dataset
 embed_datasets
@@ -22,6 +21,7 @@ run_stats_on_embedded_data
 function run_tasks() {
     for task in $1; do
         echo "Running $task"
+        python task_runner.py $task
     done
 }
 
