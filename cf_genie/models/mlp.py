@@ -2,6 +2,7 @@
 Long-short Term Memory (LSTM) model.
 """
 
+from itertools import takewhile
 from typing import Any, Dict, List, Optional
 
 import keras
@@ -9,13 +10,12 @@ from hyperopt import hp
 from keras import Sequential, callbacks, layers
 from scikeras.wrappers import KerasClassifier
 from tensorflow import keras
-from itertools import takewhile
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-from cf_genie.models.base import BaseSupervisedModel, CustomKerasClassifier, TrainingMethod
+from cf_genie.models.base import (BaseSupervisedModel, CustomKerasClassifier,
+                                  TrainingMethod)
 from cf_genie.utils import get_model_path
-
 
 log = logger.get_logger(__name__)
 
@@ -26,8 +26,8 @@ class MLP(BaseSupervisedModel):
     def init_model_object(self, **params) -> Sequential:
 
         def get_clf_model(num_hidden_layers_1: int,
-                        num_hidden_layers_2: Optional[int],
-                        num_hidden_layers_3: Optional[int],
+                          num_hidden_layers_2: Optional[int],
+                          num_hidden_layers_3: Optional[int],
                           meta: Dict[str,
                                      Any],
                           compile_kwargs: Dict[str,
@@ -39,11 +39,10 @@ class MLP(BaseSupervisedModel):
             model.add(layers.Normalization(axis=-1, name='normalization'))
 
             activation = 'relu'
-            layer_sizes = takewhile(lambda x: x is not None and x <= meta['n_features_in_'], [num_hidden_layers_1, num_hidden_layers_2, num_hidden_layers_3])
+            layer_sizes = takewhile(lambda x: x is not None and x <= meta['n_features_in_'], [
+                                    num_hidden_layers_1, num_hidden_layers_2, num_hidden_layers_3])
             for i, layer_size in enumerate(layer_sizes):
                 model.add(layers.Dense(layer_size, activation=activation, name=f'hidden-layer-{i}'))
-
-
 
             if meta['target_type_'] == 'multiclass':
                 n_output_units = meta['n_classes_']
@@ -119,6 +118,6 @@ class MLP(BaseSupervisedModel):
     def _param_grid_for_grid_search():
         return {
             'model__num_hidden_layers_1': [18, 28, 52, 78, 102],
-            'model__num_hidden_layers_2': [None],
+            'model__num_hidden_layers_2': [18, 28, 52, 78, 102, None],
             'model__num_hidden_layers_3': [None],
         }

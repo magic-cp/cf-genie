@@ -15,11 +15,11 @@ log = logger.get_logger(__name__)
 
 
 def main():
-    df = utils.read_cleaned_dataset('without-adhoc-train')
+    df = utils.read_cleaned_dataset('without-adhoc-train-balanced')
     y = df['most_occurrent_tag_group'].to_numpy()
 
     for model_class, embedder_class in product(SUPERVISED_MODELS, EMBEDDERS):
-        embedder = embedder_class([], label='without-adhoc-train')
+        embedder = embedder_class([], label='without-adhoc-train-balanced')
         removing_one_class(model_class, embedder, y, tag_group='ADHOC')
 
 

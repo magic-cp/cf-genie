@@ -1,6 +1,6 @@
 from typing import List, Type
 
-from cf_genie.models.base import (BaseSupervisedModel, BaseUnSupervisedModel)
+from cf_genie.models.base import BaseSupervisedModel, BaseUnSupervisedModel
 from cf_genie.models.complement_naive_bayes import ComplementNaiveBayes
 from cf_genie.models.kmeans import KMeansClustering
 from cf_genie.models.logistic_regression import LogisticRegression
@@ -14,7 +14,7 @@ SUPERVISED_MODELS: List[Type[BaseSupervisedModel]] = [
     ComplementNaiveBayes,
     RandomForest,
     LogisticRegression,
-    LSTM,
+    # LSTM,
     MLP,
 ]
 UNSUPERVISED_MODELS: List[Type[BaseUnSupervisedModel]] = [KMeansClustering]

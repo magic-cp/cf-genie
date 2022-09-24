@@ -29,8 +29,10 @@ def main():
     df_resampled, _ = ros.fit_resample(df, df['most_occurrent_tag_group'])
 
     log.info('Over-sampled dataset shape: %s', df.shape)
-    log.info('Value counts of dataset after over-sampling:\n%s', df_resampled['most_occurrent_tag_group'].value_counts())
-    log.info('Percentages of tags of initial dataset over-sampling:\n%s', df_resampled['most_occurrent_tag_group'].value_counts(normalize=True))
+    log.info('Value counts of dataset after over-sampling:\n%s',
+             df_resampled['most_occurrent_tag_group'].value_counts())
+    log.info('Percentages of tags of initial dataset over-sampling:\n%s',
+             df_resampled['most_occurrent_tag_group'].value_counts(normalize=True))
 
     utils.write_cleaned_dataframe_to_csv(df_resampled, name_suffix=name_suffix + '-balanced')
 

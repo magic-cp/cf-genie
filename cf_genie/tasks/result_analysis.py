@@ -20,7 +20,6 @@ log = logger.get_logger(__name__)
 def main():
     y_true = utils.read_cleaned_dataset('without-adhoc-test')['most_occurrent_tag_group'].to_numpy()
 
-
     for model_class, embedder_class in product(SUPERVISED_MODELS, EMBEDDERS):
         embedder = embedder_class([], 'without-adhoc-test')
         model = model_class(

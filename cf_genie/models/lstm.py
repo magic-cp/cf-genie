@@ -12,7 +12,8 @@ from tensorflow import keras
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
-from cf_genie.models.base import BaseSupervisedModel, CustomKerasClassifier, TrainingMethod
+from cf_genie.models.base import (BaseSupervisedModel, CustomKerasClassifier,
+                                  TrainingMethod)
 from cf_genie.utils import get_model_path
 
 log = logger.get_logger(__name__)
@@ -35,8 +36,8 @@ class LSTM(BaseSupervisedModel):
             model = Sequential(name='LSTM-cf-genie')
 
             model.add(layers.Normalization(axis=-1, name='normalization', input_shape=(
-                        meta['n_features_in_'],
-                        1)))
+                meta['n_features_in_'],
+                1)))
 
             model.add(
                 layers.ZeroPadding1D(

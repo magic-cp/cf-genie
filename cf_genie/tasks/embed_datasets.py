@@ -23,7 +23,6 @@ def main():
         with utils.Timer(f'Training embedder {embedder_class.__name__}'):
             embedder = embedder_class(df['preprocessed_statement'].to_numpy())
 
-
     for label in ['without-adhoc-test']:
         df = utils.read_cleaned_dataset(label)
         for embedder_class in EMBEDDERS:

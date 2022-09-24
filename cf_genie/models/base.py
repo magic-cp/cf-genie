@@ -5,10 +5,10 @@ from typing import Any, Callable, Dict, List
 
 import numpy as np
 from hyperopt import STATUS_OK
+from keras import backend
+from scikeras.wrappers import KerasClassifier
 from sklearn.metrics import f1_score, hamming_loss, make_scorer
 from sklearn.model_selection import GridSearchCV, cross_validate
-from scikeras.wrappers import KerasClassifier
-from keras import backend
 
 import cf_genie.logger as logger
 import cf_genie.utils as utils
@@ -209,8 +209,16 @@ class BaseSupervisedModel(BaseModel):
         model_name = self.model_name
         self.log.info('Building %s model from scratch doing a grid-search', model_name)
 
-        clf = GridSearchCV(self.init_model_object(), self.__class__._param_grid_for_grid_search(), cv=5,
-                           n_jobs=1, verbose=4, scoring=self.SCORERS, return_train_score=True, refit='f1_micro', error_score='raise')
+        clf = GridSearchCV(
+            self.init_model_object(),
+            self.__class__._param_grid_for_grid_search(),
+            cv=5,
+            n_jobs=1,
+            verbose=4,
+            scoring=self.SCORERS,
+            return_train_score=True,
+            refit='f1_micro',
+            error_score='raise')
 
         with Timer(f'{model_name} grid-search', log=self.log):
             clf.fit(self._X_getter(), self._y)
@@ -240,6 +248,7 @@ class BaseUnSupervisedModel(BaseModel):
         """
         self._X = X
         super().__init__(label)
+
 
 class CustomKerasClassifier(KerasClassifier):
     def fit(self, *args, **kwargs):

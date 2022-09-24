@@ -18,6 +18,10 @@ result_analysis
 run_stats_on_embedded_data
 "
 
+MODEL_TRAINING_TASKS="
+models_with_all_data_poc
+"
+
 function run_tasks() {
     for task in $1; do
         echo "Running $task"

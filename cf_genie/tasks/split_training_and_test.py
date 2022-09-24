@@ -14,11 +14,13 @@ logger.setup_applevel_logger(
 
 log = logger.get_logger(__name__)
 
+
 def parse_args(args):
     parser = argparse.ArgumentParser(
         description='Splits the dataset into training and test split')
     parser.add_argument('--test-size', type=float, help='Test percentage size as a float', default=0.40)
     return parser.parse_args(args)
+
 
 def main(*args):
     args = parse_args(args)
