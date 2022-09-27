@@ -30,4 +30,7 @@ function run_tasks() {
 }
 
 
+run_tasks "$DOWNLOAD_CF_TASKS"
 run_tasks "$DATASET_GENERATION_TASKS"
+run_tasks "$MODEL_TRAINING_TASKS"
+run_tasks "$PLOTTING_AND_ANALYSIS_TASKS"
