@@ -13,7 +13,10 @@ logger.setup_applevel_logger(
 
 log = logger.get_logger(__name__)
 
-TRAINING_DATASET = ['without-adhoc-train-balanced', 'train']
+TRAINING_DATASET = [
+    # 'without-adhoc-train-balanced',
+    'train'
+]
 
 def main():
     for training_dataset in TRAINING_DATASET:
