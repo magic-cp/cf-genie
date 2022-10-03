@@ -11,10 +11,11 @@ def plot_wordcloud(
         file_name: Optional[str] = None,
         plot_title: Optional[str] = None):
     wordcloud = WordCloud(
-        background_color='black',
+        background_color='white',
+        colormap='cividis',
         width=1200,
         height=800,
-        max_words=100,
+        max_words=150,
         random_state=42,
         min_word_length=4
     ).generate(text)
@@ -24,6 +25,7 @@ def plot_wordcloud(
         plt.title(plot_title)
     plt.axis('off')
     plt.imshow(wordcloud, interpolation='bilinear')
+    plt.tight_layout(pad=1)
 
     if file_name:
         write_plot(file_name, plt)
