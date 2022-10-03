@@ -35,7 +35,7 @@ class BaseEmbedder(logger.Loggable):
 
     @property
     def embedder_name_with_label(self) -> str:
-        return self.embedder_name + self.label
+        return self._embedder_name + self.label
 
     @property
     def docs_to_train_embedder(self) -> List[List[str]]:
