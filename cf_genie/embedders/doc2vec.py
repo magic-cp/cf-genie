@@ -67,7 +67,7 @@ class Doc2VecEmbedderWithSize(BaseEmbedder):
             self.log.debug('Loading model from: %s', model_path)
             model = Doc2Vec.load(model_path)
         except BaseException:
-            self.log.info('Model not stored. Building Doc2Vec model from scratch')
+            self.log.info('Model %s not stored. Building Doc2Vec model from scratch', self.embedder_name)
             with Timer(f'Doc2Vec vec size {size} training', log=self.log):
                 model = Doc2Vec(
                     dm=0,

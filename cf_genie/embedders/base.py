@@ -14,7 +14,7 @@ class BaseEmbedder(logger.Loggable):
     Sub-classes should implement the `embed` method
     """
 
-    def __init__(self, docs_to_train_embedder: List[List[str]], label: str = ''):
+    def __init__(self, docs_to_train_embedder: List[List[str]], label: str = '', training_label: str = ''):
         """
         Initialize the embedder.
 
@@ -22,14 +22,16 @@ class BaseEmbedder(logger.Loggable):
         """
         super().__init__()
         label = '' if not label else f'-{label}'
+        training_label = '' if not training_label else f'-{training_label}'
 
         self._embedder_name = self.__class__.__qualname__  # hat trick to get class name. Works for subclasses too
         self._docs_to_train_embedder = docs_to_train_embedder
         self.label = label
+        self.training_label = training_label
 
     @property
     def embedder_name(self) -> str:
-        return self._embedder_name
+        return self._embedder_name + self.training_label
 
     @property
     def embedder_name_with_label(self) -> str:
