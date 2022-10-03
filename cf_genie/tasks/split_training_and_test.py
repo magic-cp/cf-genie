@@ -30,7 +30,6 @@ def main(*args):
 
     log.info('Raw dataset shape: %s', df.shape)
 
-    X = df.index
     y = df['most_occurrent_tag_group']
     df_train, df_test = train_test_split(df, test_size=args.test_size, random_state=42, stratify=y)
 
