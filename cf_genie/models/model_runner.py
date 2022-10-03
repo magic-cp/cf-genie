@@ -14,8 +14,8 @@ from cf_genie.utils.exceptions import ModelTrainingException
 log = logger.get_logger(__name__)
 
 
-def get_model_suffix_name_for_all_classes(embedder_class: Type[BaseEmbedder]):
-    return f'with-{embedder_class.__name__}-on-all-classes'
+def get_model_suffix_name_for_all_classes(embedder_class: str):
+    return f'with-{embedder_class}-on-all-classes'
 
 
 def get_model_suffix_name_for_tag_vs_rest(embedder_class: Type[BaseEmbedder], tag_group: str):
@@ -39,7 +39,7 @@ def all_strategy(model_class: Type[BaseSupervisedModel], embedder: BaseEmbedder,
 
         wrap_model_class_for_exception_handling(model_class, embedder.read_embedded_words,
                                                 y,
-                                                label=get_model_suffix_name_for_all_classes(embedder.__class__))
+                                                label=get_model_suffix_name_for_all_classes(embedder.embedder_name))
 
 
 def one_vs_all(
