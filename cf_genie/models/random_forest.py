@@ -36,3 +36,7 @@ class RandomForest(BaseSupervisedModel):
         return {
             'n_estimators': [100, 150, 200, 250, 300, 350, 400, 450, 500]
         }
+
+    @property
+    def display_name(self) -> str:
+        return 'Random Forest'

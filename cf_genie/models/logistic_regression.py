@@ -34,3 +34,7 @@ class LogisticRegression(BaseSupervisedModel):
         return {
             '_not_doing_hp_really': [1]
         }
+
+    @property
+    def display_name(self) -> str:
+        return 'Regresión logística'

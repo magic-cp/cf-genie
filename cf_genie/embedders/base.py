@@ -57,3 +57,7 @@ class BaseEmbedder(logger.Loggable):
 
     def write_embedded_words(self, n) -> None:
         utils.write_numpy_array(self.embedder_name_with_label, n)
+
+    @property
+    def display_name(self) -> str:
+        raise NotImplementedError("Should implement display_name")

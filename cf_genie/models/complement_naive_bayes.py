@@ -43,3 +43,7 @@ class ComplementNaiveBayes(BaseSupervisedModel):
         return {
             'estimator__alpha': [0.2, 0.5, 0.8, 1.0, 10, 100, 250, 500, 1000]
         }
+
+    @property
+    def display_name(self) -> str:
+        return 'Complement Naive Bayes'

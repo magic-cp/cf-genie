@@ -10,6 +10,7 @@ from cf_genie.utils import Timer
 class FastTextEmbedder(BaseEmbedder):
     def __init__(self, size: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._size = size
 
         model_path = utils.get_model_path(f'{self.embedder_name}.bin')
         try:
@@ -30,6 +31,10 @@ class FastTextEmbedder(BaseEmbedder):
 
     def embed(self, docs: List[str]):
         return self.model.wv.get_sentence_vector(docs)
+
+    @property
+    def display_name(self) -> str:
+        return f'FastText({self._size})'
 
 
 class FastTextEmbedder30(FastTextEmbedder):

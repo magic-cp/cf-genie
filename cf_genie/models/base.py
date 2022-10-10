@@ -68,6 +68,9 @@ class BaseModel(logger.Loggable):
     def train(self) -> None:
         raise NotImplementedError("Subclasses of BaseModel should implement `train`")
 
+    @property
+    def display_name(self) -> str:
+        raise NotImplementedError("Subclasses of BaseModel should implement `display_name`")
 
 class BaseSupervisedModel(BaseModel):
     """

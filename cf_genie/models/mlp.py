@@ -121,3 +121,7 @@ class MLP(BaseSupervisedModel):
             'model__num_hidden_layers_2': [18, 28, 52, 78, 102, None],
             'model__num_hidden_layers_3': [None],
         }
+
+    @property
+    def display_name(self) -> str:
+        return 'Perceptrón multicapa'
