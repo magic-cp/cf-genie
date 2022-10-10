@@ -20,6 +20,7 @@ log = logger.get_logger(__name__)
 def main():
 
     REPORT_CONFIG = [
+        # Uncomment to test the imbalanced case
         {
             'test_dataset': 'without-adhoc-test',
             'training_dataset': 'without-adhoc-train-balanced',

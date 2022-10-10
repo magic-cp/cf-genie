@@ -38,6 +38,10 @@ class BaseEmbedder(logger.Loggable):
         return self._embedder_name + self.label
 
     @property
+    def embedder_name_no_label(self) -> str:
+        return self._embedder_name
+
+    @property
     def docs_to_train_embedder(self) -> List[List[str]]:
         return self._docs_to_train_embedder
 

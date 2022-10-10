@@ -51,6 +51,7 @@ class BaseModel(logger.Loggable):
         Subclasses has to call this method at the end of their __init__
         """
         super().__init__()
+        self._model_name_no_label = type(self).__name__
         self._model_name = type(self).__name__
         if label:
             self._model_name += '-' + label.replace(' ', '_')
@@ -59,6 +60,10 @@ class BaseModel(logger.Loggable):
     @property
     def model_name(self) -> str:
         return self._model_name
+
+    @property
+    def model_name_no_label(self) -> str:
+        return self._model_name_no_label
 
     def train(self) -> None:
         raise NotImplementedError("Subclasses of BaseModel should implement `train`")
