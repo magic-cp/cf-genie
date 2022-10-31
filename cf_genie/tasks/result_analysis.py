@@ -66,7 +66,7 @@ def main():
             print('\\clearpage')
             print(f'\\begin{{figure}}[p]')
             print(f'\\centering')
-            print(f'\\includegraphics[scale=0.5]{{images/{path}}}')
+            print(f'\\includegraphics[scale=1]{{images/{path}}}')
             print(f'\\caption[{caption}]{{{caption}}}\label{{fig:{label}}}')
             print(f'\\end{{figure}}')
             print()

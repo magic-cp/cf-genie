@@ -33,7 +33,6 @@ def main():
     ]
     results = {r'con \adhoc': {}, r'balanceado sin \adhoc{}': {}}
 
-    to_percentage = lambda x: f'{x * 100:.0f}\\%'
 
     for report_config, model_class, embedder_class in product(REPORT_CONFIG, SUPERVISED_MODELS, EMBEDDERS):
         y_true_train = utils.read_cleaned_dataset(report_config['training_dataset'])['most_occurrent_tag_group'].to_numpy()
@@ -53,35 +52,39 @@ def main():
             results[report_config['result_label']][model.display_name] = {}
         results[report_config['result_label']][model.display_name][embedder_training.display_name] = {
             'entrenamiento': {
-                'F1 Micro': to_percentage(f1_score(y_true_train, y_pred_train, average='micro')),
-                'F1 Macro': to_percentage(f1_score(y_true_train, y_pred_train, average='macro')),
-                'F1 Ponderado': to_percentage(f1_score(y_true_train, y_pred_train, average='weighted')),
-                'Pérdida de hamming': to_percentage(hamming_loss(y_true_train, y_pred_train)),
+                'F1 Micro': f1_score(y_true_train, y_pred_train, average='micro'),
+                'F1 Macro': f1_score(y_true_train, y_pred_train, average='macro'),
+                'F1 Ponderado': f1_score(y_true_train, y_pred_train, average='weighted'),
+                'Pérdida de Hamming': hamming_loss(y_true_train, y_pred_train),
             },
             'prueba': {
-                'F1 Micro': to_percentage(f1_score(y_true_test, y_pred_test, average='micro')),
-                'F1 Macro': to_percentage(f1_score(y_true_test, y_pred_test, average='macro')),
-                'F1 Ponderado': to_percentage(f1_score(y_true_test, y_pred_test, average='weighted')),
-                'Pérdida de hamming': to_percentage(hamming_loss(y_true_test, y_pred_test)),
+                'F1 Micro': f1_score(y_true_test, y_pred_test, average='micro'),
+                'F1 Macro': f1_score(y_true_test, y_pred_test, average='macro'),
+                'F1 Ponderado': f1_score(y_true_test, y_pred_test, average='weighted'),
+                'Pérdida de Hamming': hamming_loss(y_true_test, y_pred_test),
             }
         }
 
+    to_percentage = lambda x: f'{x * 100:.0f}\\%'
+
     def make_table_for_metric_appendix(metric, data_source, label):
+        metric_name = metric['name']
         for run_modality in results:
             print(r'\begin{longtable}[h]{|ll|c|}')
-            print(f'\\caption[Resultados de la métrica ``{metric}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}]{{Resultados de la métrica ``{metric}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}}}')
-            print(f'\\label{{{label}}}\\\\')
+            print(f'\\caption[Resultados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}]{{Resultados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}}}')
+            final_label = label + "-" + run_modality.replace(" ", "-").replace("{", "").replace("}", "").replace("\\", "")
+            print(f'\\label{{{final_label}}}\\\\')
             print(r'\hline')
             print(r'\multicolumn{3}{| c |}{Inicio de la tabla}\\')
             print(r'\hline')
-            print(f'Modelo & Método de repr. & {metric}\\\\')
+            print(f'Modelo & Método de repr. & {metric_name}\\\\')
             print(r'\hline')
             print(r'\endfirsthead')
 
             print(r'\hline')
-            print(f'\\multicolumn{{3}}{{|c|}}{{Continuación de la tabla~\\ref{{{label}}}}}\\\\')
+            print(f'\\multicolumn{{3}}{{|c|}}{{Continuación de la tabla~\\ref{{{final_label}}}}}\\\\')
             print(r'\hline')
-            print(f'Modelo & Método de repr. & {metric}\\\\')
+            print(f'Modelo & Método de repr. & {metric_name}\\\\')
             print(r'\hline')
             print(r'\endhead')
 
@@ -89,43 +92,64 @@ def main():
             print(r'\endfoot')
 
             print(r'\hline')
-            print(f'\\multicolumn{{3}}{{| c |}}{{Fin de la tabla~\\ref{{{label}}}}}\\\\')
+            print(f'\\multicolumn{{3}}{{| c |}}{{Fin de la tabla~\\ref{{{final_label}}}}}\\\\')
             print(r'\hline\hline')
             print(r'\endlastfoot')
 
             for model in results[run_modality]:
                 for embedder in results[run_modality][model]:
-                    print(f'{model} & {embedder} & {results[run_modality][model][embedder][data_source][metric]} \\\\')
+                    print(f'{model} & {embedder} & {to_percentage(results[run_modality][model][embedder][data_source][metric_name])} \\\\')
             print(r'\hline')
             print(r'\end{longtable}')
             print()
 
-    metrics = ['F1 Micro', 'F1 Macro', 'F1 Ponderado', 'Pérdida de hamming']
+    metrics = [
+        {
+            'name': 'F1 Micro',
+            'lambda': lambda x: x['value'],
+        },
+        {
+            'name': 'F1 Macro',
+            'lambda': lambda x: x['value'],
+        },
+        {
+            'name': 'F1 Ponderado',
+            'lambda': lambda x: x['value'],
+        },
+        {
+            'name': 'Pérdida de Hamming',
+            'lambda': lambda x: -x['value'],
+        }
+    ]
     datasets = ['prueba', 'entrenamiento']
+
     for metric, dataset in product(metrics, datasets):
-        make_table_for_metric_appendix(metric, dataset, ('apx:tbl:' + metric + dataset).replace(' ', '-').lower())
+        make_table_for_metric_appendix(metric, dataset, ('apx:tbl:' + metric['name'] + dataset).replace(' ', '-').lower())
 
 
     def make_table_for_results_section_condensed(metric, data_source, label):
+        metric_name = metric['name']
+        metric_lambda = metric['lambda']
         for run_modality in results:
             print(r'\begin{table}[h]')
             print(r'\centering')
-            print(f'\\caption[Resultados condensados de la métrica ``{metric}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}]{{Resultados condensados de la métrica ``{metric}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}}}')
-            print(f'\\label{{{label}}}')
+            print(f'\\caption[Resultados condensados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}]{{Resultados condensados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}}}')
+            final_label = label + "-" + run_modality.replace(" ", "-").replace("{", "").replace("}", "").replace("\\", "")
+            print(f'\\label{{{final_label}}}')
 
             print(r'\begin{tabular}{|ll|c|}')
             print(r'\hline')
-            print(f'Modelo & Método de repr. & {metric}\\\\')
+            print(f'Modelo & Método de repr. & {metric_name}\\\\')
             print(r'\hline')
             for model in results[run_modality]:
                 results_model = []
                 for embedder in results[run_modality][model]:
                     results_model.append({
                         'name': embedder,
-                        'value': results[run_modality][model][embedder][data_source][metric]
+                        'value': results[run_modality][model][embedder][data_source][metric_name]
                     })
-                best_embedder = max(results_model, key=lambda x: x['value'])
-                print(f'{model} & {best_embedder["name"]} & {best_embedder["value"]} \\\\')
+                best_embedder = max(results_model, key=metric_lambda)
+                print(f'{model} & {best_embedder["name"]} & {to_percentage(best_embedder["value"])} \\\\')
             print(r'\hline')
             print(r'\end{tabular}')
             print(r'\end{table}')
@@ -133,7 +157,7 @@ def main():
 
     print('BEGIN TABLES FOR RESULTS SECTION')
     for metric, dataset in product(metrics, datasets):
-        make_table_for_results_section_condensed(metric, dataset, ('apx:tbl:condensed-' + metric + "-" + dataset).replace(' ', '-').lower())
+        make_table_for_results_section_condensed(metric, dataset, ('apx:tbl:condensed-' + metric['name'] + "-" + dataset).replace(' ', '-').lower())
 
 
 if __name__ == '__main__':
