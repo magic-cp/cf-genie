@@ -1,13 +1,12 @@
 from itertools import product
 
+from sklearn.metrics import f1_score, hamming_loss
 
 import cf_genie.logger as logger
 from cf_genie import utils
 from cf_genie.embedders import EMBEDDERS
 from cf_genie.models import SUPERVISED_MODELS
 from cf_genie.models.model_runner import get_model_suffix_name_for_all_classes
-
-from sklearn.metrics import f1_score, hamming_loss
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -33,12 +32,15 @@ def main():
     ]
     results = {r'con \adhoc': {}, r'balanceado sin \adhoc{}': {}}
 
-
     for report_config, model_class, embedder_class in product(REPORT_CONFIG, SUPERVISED_MODELS, EMBEDDERS):
-        y_true_train = utils.read_cleaned_dataset(report_config['training_dataset'])['most_occurrent_tag_group'].to_numpy()
+        y_true_train = utils.read_cleaned_dataset(report_config['training_dataset'])[
+            'most_occurrent_tag_group'].to_numpy()
         y_true_test = utils.read_cleaned_dataset(report_config['test_dataset'])['most_occurrent_tag_group'].to_numpy()
-        embedder_training = embedder_class([], label=report_config['training_dataset'], training_label=report_config['training_dataset'])
-        embedder_test = embedder_class([], label=report_config['test_dataset'], training_label=report_config['training_dataset'])
+        embedder_training = embedder_class([],
+                                           label=report_config['training_dataset'],
+                                           training_label=report_config['training_dataset'])
+        embedder_test = embedder_class([], label=report_config['test_dataset'],
+                                       training_label=report_config['training_dataset'])
         model = model_class(
             embedder_training.read_embedded_words,
             y_true_train,
@@ -65,14 +67,15 @@ def main():
             }
         }
 
-    to_percentage = lambda x: f'{x * 100:.0f}\\%'
+    def to_percentage(x): return f'{x * 100:.0f}\\%'
 
     def make_table_for_metric_appendix(metric, data_source, label):
         metric_name = metric['name']
         for run_modality in results:
             print(r'\begin{longtable}[h]{|ll|c|}')
             print(f'\\caption[Resultados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}]{{Resultados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}}}')
-            final_label = label + "-" + run_modality.replace(" ", "-").replace("{", "").replace("}", "").replace("\\", "")
+            final_label = label + "-" + \
+                run_modality.replace(" ", "-").replace("{", "").replace("}", "").replace("\\", "")
             print(f'\\label{{{final_label}}}\\\\')
             print(r'\hline')
             print(r'\multicolumn{3}{| c |}{Inicio de la tabla}\\')
@@ -98,7 +101,8 @@ def main():
 
             for model in results[run_modality]:
                 for embedder in results[run_modality][model]:
-                    print(f'{model} & {embedder} & {to_percentage(results[run_modality][model][embedder][data_source][metric_name])} \\\\')
+                    print(
+                        f'{model} & {embedder} & {to_percentage(results[run_modality][model][embedder][data_source][metric_name])} \\\\')
             print(r'\hline')
             print(r'\end{longtable}')
             print()
@@ -124,8 +128,14 @@ def main():
     datasets = ['prueba', 'entrenamiento']
 
     for metric, dataset in product(metrics, datasets):
-        make_table_for_metric_appendix(metric, dataset, ('apx:tbl:' + metric['name'] + dataset).replace(' ', '-').lower())
-
+        make_table_for_metric_appendix(
+            metric,
+            dataset,
+            ('apx:tbl:' +
+             metric['name'] +
+                dataset).replace(
+                ' ',
+                '-').lower())
 
     def make_table_for_results_section_condensed(metric, data_source, label):
         metric_name = metric['name']
@@ -133,8 +143,10 @@ def main():
         for run_modality in results:
             print(r'\begin{table}[h]')
             print(r'\centering')
-            print(f'\\caption[Resultados condensados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}]{{Resultados condensados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}}}')
-            final_label = label + "-" + run_modality.replace(" ", "-").replace("{", "").replace("}", "").replace("\\", "")
+            print(
+                f'\\caption[Resultados condensados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}]{{Resultados condensados de la métrica ``{metric_name}\'\' al entrenar los modelos en el conjunto de datos de {data_source} {run_modality}}}')
+            final_label = label + "-" + \
+                run_modality.replace(" ", "-").replace("{", "").replace("}", "").replace("\\", "")
             print(f'\\label{{{final_label}}}')
 
             print(r'\begin{tabular}{|ll|c|}')
@@ -157,7 +169,15 @@ def main():
 
     print('BEGIN TABLES FOR RESULTS SECTION')
     for metric, dataset in product(metrics, datasets):
-        make_table_for_results_section_condensed(metric, dataset, ('apx:tbl:condensed-' + metric['name'] + "-" + dataset).replace(' ', '-').lower())
+        make_table_for_results_section_condensed(
+            metric,
+            dataset,
+            ('apx:tbl:condensed-' +
+             metric['name'] +
+                "-" +
+                dataset).replace(
+                ' ',
+                '-').lower())
 
 
 if __name__ == '__main__':

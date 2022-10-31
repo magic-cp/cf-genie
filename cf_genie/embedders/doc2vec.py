@@ -102,6 +102,7 @@ class Doc2VecEmbedderWithSize(BaseEmbedder):
     def display_name(self) -> str:
         return f'Doc2Vec({self._size})'
 
+
 class Doc2VecEmbedder30(Doc2VecEmbedderWithSize):
     def __init__(self, *args, **kwargs):
         super().__init__(30, *args, **kwargs)

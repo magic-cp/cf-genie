@@ -72,6 +72,7 @@ class BaseModel(logger.Loggable):
     def display_name(self) -> str:
         raise NotImplementedError("Subclasses of BaseModel should implement `display_name`")
 
+
 class BaseSupervisedModel(BaseModel):
     """
     Represents a supervised model that can be trained and tested.

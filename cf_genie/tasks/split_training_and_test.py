@@ -19,7 +19,13 @@ def parse_args(args):
     parser = argparse.ArgumentParser(
         description='Splits the dataset into training and test split')
     parser.add_argument('--test-size', type=float, help='Test percentage size as a float', default=0.40)
-    parser.add_argument('--name-suffix', type=str, help='Name suffix of the dataset', default='without-adhoc', const='', nargs='?')
+    parser.add_argument(
+        '--name-suffix',
+        type=str,
+        help='Name suffix of the dataset',
+        default='without-adhoc',
+        const='',
+        nargs='?')
     return parser.parse_args(args)
 
 

@@ -1,13 +1,12 @@
 from itertools import product
 
+from sklearn.metrics import f1_score, hamming_loss
 
 import cf_genie.logger as logger
 from cf_genie import utils
 from cf_genie.embedders import *
 from cf_genie.models import *
 from cf_genie.models.model_runner import get_model_suffix_name_for_all_classes
-
-from sklearn.metrics import f1_score, hamming_loss
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -28,7 +27,7 @@ def main():
     ]
     results = {r'con \adhoc': {}, r'balanceado sin \adhoc{}': {}}
 
-    to_percentage = lambda x: f'{x * 100:.0f}\\%'
+    def to_percentage(x): return f'{x * 100:.0f}\\%'
     PROBLEMS_MAGICCP = [
         (115, 'A'),
         (939, 'A'),
@@ -71,7 +70,11 @@ def main():
 
         X = problems_df['preprocessed_statement'].apply(lambda x: embedder.embed(x)).tolist()
         log.info('Predicting with model %s', model.model_name)
-        XX = problems_df[['contest_id', 'problem_id', 'most_occurrent_tag_group', 'tag_groups', 'cleaned_tags']].values.tolist()
+        XX = problems_df[['contest_id',
+                          'problem_id',
+                          'most_occurrent_tag_group',
+                          'tag_groups',
+                          'cleaned_tags']].values.tolist()
         y = (model.predict(X))
         for problem_id, prediction in zip(XX, y):
             print(str(problem_id[0]) + problem_id[1], problem_id[2], prediction, '|', problem_id[3], "|", problem_id[4])

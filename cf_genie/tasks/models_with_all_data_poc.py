@@ -18,6 +18,7 @@ TRAINING_DATASET = [
     'train'
 ]
 
+
 def main():
     for training_dataset in TRAINING_DATASET:
         df = utils.read_cleaned_dataset(training_dataset)

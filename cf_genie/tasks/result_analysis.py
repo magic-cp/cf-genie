@@ -1,7 +1,10 @@
 from itertools import product
 
 import matplotlib.pyplot as plt
-from sklearn.metrics import ConfusionMatrixDisplay, classification_report, confusion_matrix
+import numpy as np
+import pandas as pd
+from sklearn.metrics import (ConfusionMatrixDisplay, classification_report,
+                             confusion_matrix)
 
 import cf_genie.logger as logger
 from cf_genie import utils
@@ -9,9 +12,6 @@ from cf_genie.embedders import EMBEDDERS
 from cf_genie.embedders.base import BaseEmbedder
 from cf_genie.models import SUPERVISED_MODELS
 from cf_genie.models.model_runner import get_model_suffix_name_for_all_classes
-
-import pandas as pd
-import numpy as np
 
 logger.setup_applevel_logger(
     is_debug=False, file_name=__file__, simple_logs=True)
@@ -38,7 +38,8 @@ def main():
     }
     for report_config, model_class, embedder_class in product(REPORT_CONFIG, SUPERVISED_MODELS, EMBEDDERS):
         y_true = utils.read_cleaned_dataset(report_config['test_dataset'])['most_occurrent_tag_group'].to_numpy()
-        embedder = embedder_class([], label=report_config['test_dataset'], training_label=report_config['training_dataset'])
+        embedder = embedder_class([], label=report_config['test_dataset'],
+                                  training_label=report_config['training_dataset'])
         model = model_class(
             embedder.read_embedded_words,
             y_true,
@@ -67,9 +68,10 @@ def main():
             print(f'\\begin{{figure}}[p]')
             print(f'\\centering')
             print(f'\\includegraphics[scale=1]{{images/{path}}}')
-            print(f'\\caption[{caption}]{{{caption}}}\label{{fig:{label}}}')
+            print(f'\\caption[{caption}]{{{caption}}}\\label{{fig:{label}}}')
             print(f'\\end{{figure}}')
             print()
+
 
 if __name__ == '__main__':
     main()
