@@ -3,14 +3,19 @@ Long-short Term Memory (LSTM) model.
 """
 
 from itertools import takewhile
+import logging
 from typing import Any, Dict, List, Optional
 
 import keras
 from hyperopt import hp
 from keras import Sequential, callbacks, layers
 from scikeras.wrappers import KerasClassifier
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow import keras
 
+import tensorflow as tf
 import cf_genie.logger as logger
 import cf_genie.utils as utils
 from cf_genie.models.base import (BaseSupervisedModel, CustomKerasClassifier,
@@ -19,6 +24,7 @@ from cf_genie.utils import get_model_path
 
 log = logger.get_logger(__name__)
 
+tf.get_logger().setLevel(logging.ERROR)
 
 class MLP(BaseSupervisedModel):
     TRAINING_METHOD = TrainingMethod.GRID_SEARCH_CV
@@ -94,7 +100,7 @@ class MLP(BaseSupervisedModel):
         }
 
     def predict(self, X) -> Any:
-        return self.model.predict(X)
+        return self.model.predict(X, verbose=0)
 
     @property
     def model_path(self) -> str:
@@ -102,9 +108,14 @@ class MLP(BaseSupervisedModel):
 
     def _read_model_from_disk(self) -> Any:
         try:
+            tf.config.set_visible_devices([], 'GPU')
+            visible_devices = tf.config.get_visible_devices()
+            for device in visible_devices:
+                assert device.device_type != 'GPU'
             new_reg_model = keras.models.load_model(self.model_path)
-            reg_new = KerasClassifier(new_reg_model)
+            reg_new = CustomKerasClassifier(new_reg_model)
             reg_new.initialize(self._X_getter(), self._y)
+
             return reg_new
         except OSError:
             raise FileNotFoundError('Model file not found: ' + self.model_path)
