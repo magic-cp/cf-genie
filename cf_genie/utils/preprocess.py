@@ -10,8 +10,8 @@ from nltk.tokenize import word_tokenize
 
 import cf_genie.logger as logger
 
-nltk.download('punkt')
-nltk.download('stopwords')
+nltk.download('punkt', quiet=True)
+nltk.download('stopwords', quiet=True)
 
 stemmer = SnowballStemmer(language='english')
 
